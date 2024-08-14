@@ -1,4 +1,5 @@
 import { DefaultSession, DefaultUser } from "next-auth";
+import { User } from "@/app/lib/definitions";
 
 declare module "next-auth" {
   interface Session {
