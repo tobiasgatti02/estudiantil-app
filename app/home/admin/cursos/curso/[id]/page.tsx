@@ -25,9 +25,7 @@ export default function CoursePage() {
       <Suspense fallback={<div>Loading students...</div>}>
         <StudentList courseId={Number(id)}/>
       </Suspense>
-      <Suspense fallback={<div>Loading subjects...</div>}>
-        <CreateSubject  />
-      </Suspense>
+     
       <Suspense fallback={<div>Loading subjects...</div>}>
         <SubjectList />
       </Suspense>

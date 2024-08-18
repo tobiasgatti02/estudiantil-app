@@ -1,15 +1,19 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, SetStateAction } from 'react';
 import Link from 'next/link';
-import { getSubjectsForCourse, getTeachers, deleteSubjectAndTeacherFromSubject } from '@/app/lib/adminActions';
 import { useParams } from 'next/navigation';
+import { getSubjectsForCourse, getTeachers, deleteSubjectAndTeacherFromSubject } from '@/app/lib/adminActions';
+import CreateSubject from './crearMateria';
+import { Input, Button } from '@/app/components/ui/buttonAndInput'; 
+
 export default function SubjectList() {
   const params = useParams();
   const courseId = Number(params.id);
 
   const [subjects, setSubjects] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const subjectsPerPage = 9;
 
   useEffect(() => {
     async function fetchData() {
@@ -21,14 +25,14 @@ export default function SubjectList() {
     fetchData();
   }, [courseId]);
 
-  const handleSubjectsUpdate = (updatedSubjects: any[]) => {
+  const handleSubjectsUpdate = async () => {
+    const updatedSubjects = await getSubjectsForCourse(courseId);
     setSubjects(updatedSubjects);
   };
 
   const handleDeleteSubject = async (subjectId: string) => {
     try {
       await deleteSubjectAndTeacherFromSubject(subjectId);
-
       const subjectsForCourse = await getSubjectsForCourse(courseId);
       setSubjects(subjectsForCourse);
     } catch (error) {
@@ -36,11 +40,43 @@ export default function SubjectList() {
     }
   };
 
+  const filteredSubjects = useMemo(() => {
+    return subjects.filter((subject) =>
+      subject.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [subjects, searchTerm]);
+
+  const totalPages = Math.ceil(filteredSubjects.length / subjectsPerPage);
+
+  const currentSubjects = useMemo(() => {
+    const indexOfLastSubject = currentPage * subjectsPerPage;
+    const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
+    return filteredSubjects.slice(indexOfFirstSubject, indexOfLastSubject);
+  }, [filteredSubjects, currentPage]);
+
+  const handleSearch = (e: { target: { value: SetStateAction<string>; }; }) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);  // Reset to first page when searching
+  };
+
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(Math.min(Math.max(1, pageNumber), totalPages));
+  };
+
   return (
     <div className="mt-4">
       <h2 className="text-xl font-semibold mb-2">Materias en el curso</h2>
+      
+      <Input
+        type="text"
+        placeholder="Buscar materias..."
+        value={searchTerm}
+        onChange={handleSearch}
+        className="mb-4"
+      />
+
       <ul className="space-y-2">
-        {subjects.map((subject) => (
+        {currentSubjects.map((subject) => (
           <li key={subject.subject_id} className="bg-white p-4 rounded shadow flex justify-between items-center">
             <span>{subject.name}</span>
             <div>
@@ -50,17 +86,47 @@ export default function SubjectList() {
               >
                 Ver materia
               </Link>
-              <button 
+              <Button 
                 onClick={() => handleDeleteSubject(subject.subject_id)}
-                className="ml-4 text-red-500 hover:underline"
+                variant="outline"
+                className="ml-4 text-red-500 hover:bg-red-100"
               >
                 Borrar
-              </button>
+              </Button>
             </div>
           </li>
         ))}
       </ul>
-      
+
+      {filteredSubjects.length > subjectsPerPage && (
+        <div className="flex justify-center mt-4 space-x-2">
+          <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+            Anterior
+          </Button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <Button
+              key={i}
+              onClick={() => paginate(i + 1)}
+              variant={currentPage === i + 1 ? "default" : "outline"}
+            >
+              {i + 1}
+            </Button>
+          ))}
+          <Button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+            Siguiente
+          </Button>
+        </div>
+      )}
+
+          <Link href={`/home/admin/cursos/curso/${courseId}/materia/crear`}
+          className="block bg-[#4a90e2] text-white py-3 
+          rounded-lg font-semibold 
+          mx-64 text-center mt-8
+          transition duration-300 ease-in-out 
+          hover:bg-[#357ABD] focus:outline-none 
+          focus:ring-2 focus:ring-[#357ABD]">
+              Crear Nueva Materia
+          </Link>
     </div>
   );
 }

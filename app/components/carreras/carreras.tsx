@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { createCarrera } from "@/app/lib/adminActions";
 
-export default function CarreraForm({ onCarreraCreated }) {
+export default function CarreraForm({ onCarreraCreated }: { onCarreraCreated: () => void }) {
   const [nombre, setNombre] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     if (!nombre.trim()) {
       setError("El nombre de la carrera no puede estar vacío.");

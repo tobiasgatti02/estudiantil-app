@@ -19,13 +19,13 @@ export default function SubjectSchedule() {
   });
   const [editSchedule, setEditSchedule] = useState<any | null>(null);
   
-  const [subjectTeachers, setSubjectTeachers] = useState([]);
+  const [subjectTeachers, setSubjectTeachers] = useState<any[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
-  const [selectedTeachers, setSelectedTeachers] = useState([]);
+  const [selectedTeachers, setSelectedTeachers] = useState<any[]>([]);
   const [currentMonth, setCurrentMonth] = useState(1);
-  const [monthSchedules, setMonthSchedules] = useState({});
+  const [monthSchedules, setMonthSchedules] = useState<{ [key: number]: any }>({});
   const [copiedSchedule, setCopiedSchedule] = useState(null);
-  const [teachers, setTeachers] = useState([]);
+  const [teachers, setTeachers] = useState<any[]>([]);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export default function SubjectSchedule() {
 
   
 
-  const handleRemoveTeacher = async (teacherId) => {
+  const handleRemoveTeacher = async (teacherId: number) => {
     try {
       console.log('Removing teacher:', teacherId);
       await deleteTeacherFromSubject(subjectId, teacherId);
@@ -156,13 +156,13 @@ export default function SubjectSchedule() {
     }
   };
 
-  const handleTeacherChange = (index, value) => {
+  const handleTeacherChange = (index: number, value: string) => {
     const newTeachers = [...selectedTeachers];
     newTeachers[index] = value;
     setSelectedTeachers(newTeachers);
   };
 
-  const handleScheduleChange = (day, index, field, value) => {
+  const handleScheduleChange = (day: number, index: number, field: string, value: string) => {
     setMonthSchedules(prevSchedules => ({
       ...prevSchedules,
       [currentMonth]: {
@@ -179,7 +179,7 @@ export default function SubjectSchedule() {
     }));
   };
 
-  const handleAddScheduleEntry = (day) => {
+  const handleAddScheduleEntry = (day: number) => {
     setMonthSchedules(prevSchedules => ({
       ...prevSchedules,
       [currentMonth]: {
@@ -192,7 +192,7 @@ export default function SubjectSchedule() {
     }));
   };
 
-  const handleRemoveScheduleEntry = (day, index) => {
+  const handleRemoveScheduleEntry = (day: number, index: number) => {
     setMonthSchedules(prevSchedules => ({
       ...prevSchedules,
       [currentMonth]: {
@@ -209,7 +209,8 @@ export default function SubjectSchedule() {
     try {
       for (const [month, monthData] of Object.entries(monthSchedules)) {
         for (const [day, daySchedules] of Object.entries(monthData)) {
-          for (const schedule of daySchedules) {
+          const schedulesArray = daySchedules as Array<any>;
+          for (const schedule of schedulesArray) {
             if (schedule.startTime && schedule.endTime) {
               await createSubjectSchedule(subjectId, {
                 ...schedule,
@@ -233,21 +234,22 @@ export default function SubjectSchedule() {
   const handleAddTeacherSelect = () => {
     setSelectedTeachers([...selectedTeachers, '']); // Agrega un nuevo selector vacío
   };
-  const handleCopySchedule = (day, index) => {
+  const handleCopySchedule = (day: number, index: string | number) => {
     setCopiedSchedule(monthSchedules[currentMonth]?.[day]?.[index]);
   };
 
-  const handleRemoveTeacherSelect = (index) => {
+  const handleRemoveTeacherSelect = (index: number) => {
     const newTeachers = selectedTeachers.filter((_, i) => i !== index);
     setSelectedTeachers(newTeachers);
   };
 
-  const handlePasteSchedule = (day, index) => {
+  const handlePasteSchedule = (day: number, index: number) => {
     if (copiedSchedule) {
-      handleScheduleChange(day, index, 'startTime', copiedSchedule.startTime);
-      handleScheduleChange(day, index, 'endTime', copiedSchedule.endTime);
-      handleScheduleChange(day, index, 'location', copiedSchedule.location);
-      handleScheduleChange(day, index, 'classroom', copiedSchedule.classroom);
+      const schedule = copiedSchedule as any; // Type assertion
+      handleScheduleChange(day, index, 'startTime', schedule.startTime);
+      handleScheduleChange(day, index, 'endTime', schedule.endTime);
+      handleScheduleChange(day, index, 'location', schedule.location);
+      handleScheduleChange(day, index, 'classroom', schedule.classroom);
     }
   };
 
@@ -273,7 +275,7 @@ export default function SubjectSchedule() {
             const day_of_month = new Date(2024, currentMonth - 1, day).getDay();
             const daySchedules = monthSchedules[currentMonth]?.[day] || [{ startTime: '', endTime: '', location: '', classroom: '' }];
 
-            return daySchedules.map((schedule, scheduleIndex) => (
+            return daySchedules.map((schedule: { startTime: any; endTime: any; location: any; classroom: any; }, scheduleIndex: number) => (
               <tr key={`${day}-${scheduleIndex}`}>
                 <td className="border border-gray-300 p-2">
                   {scheduleIndex === 0 ? (

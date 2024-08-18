@@ -6,7 +6,7 @@ import { get } from 'http';
 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-export default function CreateSubject() {
+export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: () => void }) {
   const { id: courseId } = useParams();
   const [subjectName, setSubjectName] = useState('');
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -96,7 +96,7 @@ export default function CreateSubject() {
           }
         }
       }
-
+      await onSubjectCreated();
  
       
   
