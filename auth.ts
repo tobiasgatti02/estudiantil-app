@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getUserByName } from "./app/lib/actions";
+import { getUserByDni } from "./app/lib/userActions";
+import { User } from "./app/lib/definitions";
 
 export const {
     handlers: { GET, POST },
@@ -14,13 +15,16 @@ export const {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.role = user.role;
+                token.role = user.user_type;
+                token.dni = user.dni;
+                
             }
             return token;
         },
         async session({ session, token }) {
             if (token && session.user) {
-                session.user.role = token.role as string;
+                session.user.user_type = token.role as string;
+                session.user.dni = token.dni as string; // Añade el dni a la sesión
             }
             return session;
         },
@@ -30,16 +34,17 @@ export const {
             credentials: {
                 name: {},
                 password: {},
+                dni: {},
             },
-            async authorize(credentials: any) {
+            async authorize(credentials: Partial<Record<"name" | "password" | "dni", unknown>>, request: Request): Awaitable<User | null> {
                 if (credentials === null) return null;
 
                 try {
-                    const user = await getUserByName(credentials.name);
+                    const [user]: User[] = await getUserByDni(credentials.dni as string);
                     if (user) {
                         const isMatch = user.password === credentials.password;
                         if (isMatch) {
-                            return { ...user, id: user.id.toString() };
+                            return { ...user };
                         } else {
                             throw new Error("Name or Password is not correct");
                         }

@@ -2,7 +2,7 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { insertUser } from '../../lib/actions';
+import { insertUser } from '../../lib/userActions';
 
 const CreateAccountPage = () => {
 

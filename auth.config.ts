@@ -20,14 +20,13 @@ export const authConfig: NextAuthConfig = {
     async authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
-      const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
+      const isOnAdmin = nextUrl.pathname.startsWith('/home/admin/carreras');
       const isOnTeacher = nextUrl.pathname.startsWith('/home/teacher');
       const isOnStudent = nextUrl.pathname.startsWith('/home/student');
-      const isOnLogin = nextUrl.pathname.startsWith('/auth/login');
       const baseUrl = process.env.NEXTAUTH_URL;
 
       if (isLoggedIn) {
-        switch (auth?.user?.role) {
+        switch (auth.user?.role) {
           case 'owner':
             if (!isOnOwner) {
               return NextResponse.redirect(baseUrl + '/home/owner');
@@ -35,7 +34,7 @@ export const authConfig: NextAuthConfig = {
             return true;
           case 'admin':
             if (isOnOwner) {
-              return NextResponse.redirect(baseUrl + '/home/admin');
+              return NextResponse.redirect(baseUrl + '/home/admin/carreras');
             }
             return true;
           case 'teacher':
@@ -59,11 +58,12 @@ export const authConfig: NextAuthConfig = {
       }
     },
     async jwt({ token, user, trigger, session }) {
+       
       if (trigger === 'signIn') {
         return {
           ...token,
-          id: user.id,
-          email: user.email,
+          name: user.name,
+          dni: user.dni,
           role: user.role,
         };
       }
@@ -72,19 +72,17 @@ export const authConfig: NextAuthConfig = {
         try {
           const client = await db.connect();
           const result = await client.query(
-            `UPDATE usuarios SET name = $1, role = $2 WHERE email = $3 RETURNING *`,
-            [session.user.name, session.user.role, session.user.email]
+            `UPDATE usuarios SET name = $1, user_type = $2 WHERE dni = $3 RETURNING *`,
+            [session.user.name, session.user.role, session.user.dni]
           );
           client.release();
-
           if (!result.rows[0]) {
             return token;
           }
-
           return {
             ...token,
-            id: result.rows[0].id,
-            email: result.rows[0].email,
+            dni: result.rows[0].dni,
+            name: result.rows[0].name,
             role: result.rows[0].role,
           };
         } catch (error) {
@@ -96,16 +94,17 @@ export const authConfig: NextAuthConfig = {
       return token;
     },
     async session({ session, token }: { session: any; token: JWT }) {
+
       return {
         ...session,
         user: {
           ...session.user,
-          id: token.id,
-          email: token.email,
+          dni: token.dni,
+          name: token.name,
           role: token.role,
         },
       };
     },
   },
-  providers: [], // Asegúrate de agregar tus proveedores aquí
+  providers: [], 
 } satisfies NextAuthConfig;
