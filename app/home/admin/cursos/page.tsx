@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import CourseList from '@/app/components/adminManagement/listaCurso/courseList';
 import CreateCourseForm from '@/app/components/adminManagement/formCurso/createCourseForm';
 import { getAdminByDni } from '@/app/lib/userActions';
+import ClientCourseList from '@/app/components/adminManagement/listaCurso/courseList';
 
 export default function CoursesPage() {
-  const { data: session } = useSession(); // Obtén la sesión
+  const { data: session } = useSession();
   const [canCreateCourses, setCanCreateCourses] = useState(false);
 
   useEffect(() => {
@@ -30,9 +30,7 @@ export default function CoursesPage() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Cursos</h1>
       {canCreateCourses && <CreateCourseForm />}
-      <Suspense fallback={<div>Loading courses...</div>}>
-        <CourseList />
-      </Suspense>
+      <ClientCourseList />
     </div>
   );
 }
