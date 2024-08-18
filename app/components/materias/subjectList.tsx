@@ -68,11 +68,11 @@ export default function SubjectList() {
       <h2 className="text-xl font-semibold mb-2">Materias en el curso</h2>
       
       <Input
-        type="text"
-        placeholder="Buscar materias..."
+        className='mb-4'
+        type='search'
+        placeholder='Buscar materia'
         value={searchTerm}
         onChange={handleSearch}
-        className="mb-4"
       />
 
       <ul className="space-y-2">
@@ -100,19 +100,19 @@ export default function SubjectList() {
 
       {filteredSubjects.length > subjectsPerPage && (
         <div className="flex justify-center mt-4 space-x-2">
-          <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+          <Button onClick={async () => paginate(currentPage - 1)}>
             Anterior
           </Button>
           {Array.from({ length: totalPages }, (_, i) => (
             <Button
               key={i}
-              onClick={() => paginate(i + 1)}
+              onClick={async () => paginate(i + 1)}
               variant={currentPage === i + 1 ? "default" : "outline"}
             >
               {i + 1}
             </Button>
           ))}
-          <Button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+          <Button onClick={async () => paginate(currentPage + 1)}>
             Siguiente
           </Button>
         </div>

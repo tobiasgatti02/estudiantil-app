@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getUsersByRole } from '@/app/lib/userActions';
 import AdminManagement from '@/app/components/ownerManagement/usuariosAdmin/adminManagement';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
@@ -10,11 +10,7 @@ const OwnerHomePage = () => {
     const [activeSubSection, setActiveSubSection] = useState('Existentes');
     const [users, setUsers] = useState<any[]>([]);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [activeSection]); // Se ejecuta cada vez que cambia la sección activa
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             const role = activeSection === 'Administradores' ? 'admin' : 
                          activeSection === 'Profesores' ? 'teacher' : 'student';
@@ -23,7 +19,11 @@ const OwnerHomePage = () => {
         } catch (error) {
             console.error('Error fetching users:', error);
         }
-    };
+    }, [activeSection]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [activeSection, fetchUsers]); // Include fetchUsers in the dependency array
 
     const handleSectionChange = (section: React.SetStateAction<string>) => {
         if (section !== activeSection) { // Evitar recargas innecesarias
@@ -74,6 +74,8 @@ const OwnerHomePage = () => {
                     users={users} 
                     activeSubSection={activeSubSection} 
                     fetchUsers={fetchUsers} 
+                    canCreate={false}
+                    canDelete={false}
                 />
             )}
             {activeSection === 'Alumnos' && (
@@ -81,6 +83,8 @@ const OwnerHomePage = () => {
                     users={users} 
                     activeSubSection={activeSubSection} 
                     fetchUsers={fetchUsers} 
+                    canCreate={false}
+                    canDelete={false}
                 />
             )}
         </div>

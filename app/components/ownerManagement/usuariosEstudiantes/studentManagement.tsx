@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
 import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
 
-const StudentManagement = ({ users, activeSubSection, fetchUsers }) => {
+interface Student {
+    student_id: number;
+    name: string;
+    dni: string;
+    password: string;
+}
+
+interface StudentManagementProps {
+    users: Student[];
+    activeSubSection: string;
+    fetchUsers: () => void;
+    canCreate: boolean;
+    canDelete: boolean;
+}
+
+const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubSection, fetchUsers, canCreate, canDelete }) => {
     const [newStudent, setNewStudent] = useState({
         name: '',
         dni: '',
@@ -9,7 +24,7 @@ const StudentManagement = ({ users, activeSubSection, fetchUsers }) => {
         user_type: 'student'
     });
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setNewStudent(prev => ({
             ...prev,
@@ -17,7 +32,7 @@ const StudentManagement = ({ users, activeSubSection, fetchUsers }) => {
         }));
     };
 
-    const handleCreateStudent = async (e) => {
+    const handleCreateStudent = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             await createUser(newStudent);
@@ -30,31 +45,36 @@ const StudentManagement = ({ users, activeSubSection, fetchUsers }) => {
             });
             fetchUsers();
         } catch (error) {
-            console.error('Error creating student:', error);
+            console.error('Error creando estudiante:', error);
             alert('Error al crear estudiante');
         }
     };
 
-    const handleDeleteStudent = async (id: number) => {
+    const handleDeleteStudent = async (id: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este estudiante?')) {
             try {
                 await deleteUser(id.toString());
                 alert('Estudiante eliminado exitosamente');
                 fetchUsers();
             } catch (error) {
-                console.error('Error deleting student:', error);
+                console.error('Error eliminando estudiante:', error);
                 alert('Error al eliminar estudiante');
             }
         }
     };
 
-    const handleSaveChanges = async (student: { id?: React.Key | null | undefined; name: string | number | readonly string[] | undefined; dni: string | number | readonly string[] | undefined; password: string | number | readonly string[] | undefined; role?: string | undefined; permissions?: { can_create_teachers?: boolean; can_delete_teachers?: boolean; can_create_students?: boolean; can_delete_students?: boolean; can_create_careers?: boolean; can_create_courses?: boolean; } | undefined; }) => {
+    const handleSaveChanges = async (student: Student) => {
         try {
-            await updateUser(student);
+            await updateUser({
+                ...student,
+                name: String(student.name),
+                dni: String(student.dni),
+                password: String(student.password),
+            });
             alert('Cambios guardados exitosamente');
             fetchUsers();
         } catch (error) {
-            console.error('Error updating student:', error);
+            console.error('Error guardando cambios:', error);
             alert('Error al guardar cambios');
         }
     };
@@ -63,22 +83,46 @@ const StudentManagement = ({ users, activeSubSection, fetchUsers }) => {
         <div>
             {activeSubSection === 'Existentes' && (
                 <div>
-                    {users.map((student: { id:number; name: string | number | readonly string[] | undefined; dni: string | number | readonly string[] | undefined; password: string | number | readonly string[] | undefined; }) => (
-                        <div key={student.id} className="bg-gray-100 p-4 mb-4 rounded">
-                            <input type="text" defaultValue={student.name} className="mb-2 p-2 w-full" readOnly />
-                            <input type="text" defaultValue={student.dni} className="mb-2 p-2 w-full" readOnly />
-                            <input type="text" defaultValue={student.password} className="mb-2 p-2 w-full" onChange={(e) => student.password = e.target.value} />
-                            <button onClick={() => handleDeleteStudent(student.id)} className="bg-red-500 text-white px-4 py-2 mr-2">
-                                Eliminar estudiante
-                            </button>
-                            <button onClick={() => handleSaveChanges(student)} className="bg-green-500 text-white px-4 py-2">
+                    {users.map((student) => (
+                        <div key={student.dni} className="bg-gray-100 p-4 mb-4 rounded">
+                            
+                            <input 
+                                type="text" 
+                                defaultValue={student.name} 
+                                className="mb-2 p-2 w-full" 
+                                readOnly 
+                            />
+                            <input 
+                                type="text" 
+                                defaultValue={student.dni} 
+                                className="mb-2 p-2 w-full" 
+                                readOnly 
+                            />
+                            <input 
+                                type="text" 
+                                defaultValue={student.password} 
+                                className="mb-2 p-2 w-full" 
+                                onChange={(e) => student.password = e.target.value} 
+                            />
+                            {canDelete && (
+                                <button 
+                                    onClick={() => handleDeleteStudent(student.dni)} 
+                                    className="bg-red-500 text-white px-4 py-2 mr-2"
+                                >
+                                    Eliminar estudiante
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => handleSaveChanges(student)} 
+                                className="bg-green-500 text-white px-4 py-2"
+                            >
                                 Guardar cambios
                             </button>
                         </div>
                     ))}
                 </div>
             )}
-            {activeSubSection === 'Crear nuevo' && (
+            {activeSubSection === 'Crear nuevo' && canCreate && (
                 <form onSubmit={handleCreateStudent} className="bg-gray-100 p-4 rounded">
                     <h2 className="text-xl font-bold mb-4">Crear nuevo estudiante</h2>
                     <div className="mb-2">

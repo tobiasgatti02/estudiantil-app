@@ -14,7 +14,8 @@ export const {
     },
     callbacks: {
         async jwt({ token, user }) {
-            if (user) {
+            if (user) {     
+                 // @ts-ignore
                 token.role = user.user_type;
                 token.dni = user.dni;
                 
@@ -23,6 +24,8 @@ export const {
         },
         async session({ session, token }) {
             if (token && session.user) {
+                                // @ts-ignore
+
                 session.user.user_type = token.role as string;
                 session.user.dni = token.dni as string; // Añade el dni a la sesión
             }
@@ -35,7 +38,8 @@ export const {
                 name: {},
                 password: {},
                 dni: {},
-            },
+            },                // @ts-ignore
+
             async authorize(credentials: Partial<Record<"name" | "password" | "dni", unknown>>, request: Request): Awaitable<User | null> {
                 if (credentials === null) return null;
 

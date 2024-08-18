@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
 
-const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
+const TeacherManagement = ({ users, activeSubSection, fetchUsers, canCreate, canDelete }: { users: any[], activeSubSection: string, fetchUsers: () => void, canCreate: boolean, canDelete: boolean }) => {
     const [newTeacher, setNewTeacher] = useState({
         name: '',
         dni: '',
@@ -9,7 +9,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
         user_type: 'teacher'
     });
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
         const { name, value } = e.target;
         setNewTeacher(prev => ({
             ...prev,
@@ -17,7 +17,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
         }));
     };
 
-    const handleCreateTeacher = async (e) => {
+    const handleCreateTeacher = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         try {
             await createUser(newTeacher);
@@ -25,6 +25,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
             setNewTeacher({
                 name: '',
                 dni: '',
+
                 password: '',
                 user_type: 'teacher'
             });
@@ -35,7 +36,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
         }
     };
 
-    const handleDeleteTeacher = async (id) => {
+    const handleDeleteTeacher = async (id: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este profesor?')) {
             try {
                 await deleteUser(id);
@@ -48,7 +49,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
         }
     };
 
-    const handleSaveChanges = async (teacher) => {
+    const handleSaveChanges = async (teacher: { name?: string; dni: string; password?: string; role?: string; permissions?: { can_create_teachers?: boolean; can_delete_teachers?: boolean; can_create_students?: boolean; can_delete_students?: boolean; can_create_careers?: boolean; can_create_courses?: boolean; }; }) => {
         try {
             await updateUser(teacher);
             alert('Cambios guardados exitosamente');
@@ -64,11 +65,11 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers }) => {
             {activeSubSection === 'Existentes' && (
                 <div>
                     {users.map((teacher) => (
-                        <div key={teacher.id} className="bg-gray-100 p-4 mb-4 rounded">
+                        <div key={teacher.teacher_id || teacher.dni} className="bg-gray-100 p-4 mb-4 rounded">
                             <input type="text" defaultValue={teacher.name} className="mb-2 p-2 w-full" readOnly />
                             <input type="text" defaultValue={teacher.dni} className="mb-2 p-2 w-full" readOnly />
                             <input type="text" defaultValue={teacher.password} className="mb-2 p-2 w-full" onChange={(e) => teacher.password = e.target.value} />
-                            <button onClick={() => handleDeleteTeacher(teacher.id)} className="bg-red-500 text-white px-4 py-2 mr-2">
+                            <button onClick={() => handleDeleteTeacher(teacher.dni)} className="bg-red-500 text-white px-4 py-2 mr-2">
                                 Eliminar profesor
                             </button>
                             <button onClick={() => handleSaveChanges(teacher)} className="bg-green-500 text-white px-4 py-2">

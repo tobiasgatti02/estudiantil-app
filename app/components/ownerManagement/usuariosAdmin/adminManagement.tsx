@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
+import { createUser, updateUser, deleteUser, getUsers } from '@/app/lib/userActions';
 import Logout from '@/app/auth/logOut/page';
 
-const PermissionCheckbox = ({ id, checked, onChange, label }) => (
+const PermissionCheckbox = ({ id, checked, onChange, label }: { id: string, checked: boolean, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, label: string }) => (
     <div>
         <input
             type="checkbox"
@@ -14,7 +14,14 @@ const PermissionCheckbox = ({ id, checked, onChange, label }) => (
     </div>
 );
 
-const AdminForm = ({ admin, onChange, onSubmit, onDelete }) => (
+type AdminFormProps = {
+    admin: any;
+    onChange: any;
+    onSubmit: any;
+    onDelete: any;
+};
+
+const AdminForm = ({ admin, onChange, onSubmit, onDelete }: AdminFormProps) => (
     <div key={admin.dni} className="bg-gray-100 p-4 mb-4 rounded">
         <input
             type="text"
@@ -40,7 +47,7 @@ const AdminForm = ({ admin, onChange, onSubmit, onDelete }) => (
                 <PermissionCheckbox
                     key={key}
                     id={`${admin.dni}-${key}`}
-                    checked={value}
+                    checked={value as boolean}
                     onChange={(e) => onChange(admin.dni, `permissions.${key}`, e.target.checked)}
                     label={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
                 />
@@ -61,7 +68,7 @@ const AdminForm = ({ admin, onChange, onSubmit, onDelete }) => (
     </div>
 );
 
-const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
+const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSection: string, fetchUsers: any }) => {
     const [admins, setAdmins] = useState(users);
     const [newAdmin, setNewAdmin] = useState({
         name: '',
@@ -82,17 +89,10 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
         setAdmins(users);
     }, [users]);
 
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setNewAdmin(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-            permissions: type === 'checkbox' ? { ...prev.permissions, [name]: checked } : prev.permissions
-        }));
-    };
+  
 
-    const handleAdminChange = (dni, key, value) => {
-        setAdmins(prev => prev.map(admin => {
+    const handleAdminChange = (dni: any, key: string, value: any) => {
+        setAdmins((prev: { dni: any; permissions: any; }[]) => prev.map((admin: { dni: any; permissions: any; }) => {
             if (admin.dni === dni) {
                 if (key.startsWith('permissions.')) {
                     const permissionKey = key.split('.')[1];
@@ -113,7 +113,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
         }));
     };
 
-    const handleCreateAdmin = async (e) => {
+    const handleCreateAdmin = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         try {
             await createUser(newAdmin);
@@ -132,19 +132,19 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
                     canCreateCourses: false
                 }
             });
-            fetchUsers();
+            getUsers();
         } catch (error) {
             console.error('Error creating admin:', error);
             alert('Error al crear administrador');
         }
     };
 
-    const handleDeleteAdmin = async (dni) => {
+    const handleDeleteAdmin = async (dni: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este administrador?')) {
             try {
                 await deleteUser(dni);
                 alert('Administrador eliminado exitosamente');
-                fetchUsers();
+                getUsers();
             } catch (error) {
                 console.error('Error deleting admin:', error);
                 alert('Error al eliminar administrador');
@@ -152,7 +152,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
         }
     };
 
-    const handleSaveChanges = async (admin) => {
+    const handleSaveChanges = async (admin: { permissions: any; name?: string | undefined; dni: string; password?: string | undefined; role?: string | undefined; }) => {
         try {
             await updateUser({
                 ...admin,
@@ -167,7 +167,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
                 }
             });
             alert('Cambios guardados exitosamente');
-            fetchUsers();
+            getUsers();
         } catch (error) {
             console.error('Error updating admin:', error);
             alert('Error al guardar cambios');
@@ -179,7 +179,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }) => {
             <Logout />
             {activeSubSection === 'Existentes' && (
                 <div>
-                    {admins.map((admin) => (
+                    {admins.map((admin: { dni: React.Key | null | undefined; }) => (
                         <AdminForm
                             key={admin.dni}
                             admin={admin}

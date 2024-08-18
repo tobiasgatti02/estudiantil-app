@@ -54,7 +54,19 @@ export async function insertUser(userData: { name: string, email: string,dni:str
     throw new Error('Error inserting user: ' + error.message);
   }
 }
-
+export async function getUsers() {
+  try {
+    const query = `
+      SELECT * FROM usuarios
+    `;
+    const result
+      = await db.query(query);
+    return result.rows;
+  }
+  catch (error: any) {
+    throw new Error('Error getting users: ' + error.message);
+  }
+}
 export async function createUser(userData: { name: string, dni: string, password: string, user_type: string, permissions?: any }) {
   const client = await db.connect();
   try {
@@ -137,18 +149,30 @@ export async function getUsersByRole(role: string) {
         CASE 
           WHEN u.user_type = 'admin' THEN (
             SELECT json_build_object(
-              'canCreateTeachers', a.can_create_teachers,
-              'canDeleteTeachers', a.can_delete_teachers,
-              'canCreateStudents', a.can_create_students,
-              'canDeleteStudents', a.can_delete_students,
-              'canCreateCareers', a.can_create_careers,
-              'canCreateCourses', a.can_create_courses
+              'permissions', json_build_object(
+                'canCreateTeachers', a.can_create_teachers,
+                'canDeleteTeachers', a.can_delete_teachers,
+                'canCreateStudents', a.can_create_students,
+                'canDeleteStudents', a.can_delete_students,
+                'canCreateCareers', a.can_create_careers,
+                'canCreateCourses', a.can_create_courses
+              )
             )
             FROM administrators a 
             WHERE a.user_id = u.user_id
           )
+          WHEN u.user_type = 'student' THEN (
+            SELECT json_build_object('student_id', s.student_id)
+            FROM students s
+            WHERE s.user_id = u.user_id
+          )
+          WHEN u.user_type = 'teacher' THEN (
+            SELECT json_build_object('teacher_id', t.teacher_id)
+            FROM teachers t
+            WHERE t.user_id = u.user_id
+          )
           ELSE NULL
-        END as permissions
+        END as additional_info
       FROM usuarios u
       WHERE u.user_type = $1
       ORDER BY u.user_id DESC
@@ -160,6 +184,7 @@ export async function getUsersByRole(role: string) {
     throw new Error('Error getting users: ' + error.message);
   }
 }
+
 
 
 
@@ -193,7 +218,7 @@ export async function doCredentialLogin(formData: FormData) {
       return { error: response.error };
     }
 
-    const userArray = await getUserByDni(formData.get("dni"));
+    const userArray = await getUserByDni(formData.get("dni")?.toString() ?? "");
     const user = userArray[0]; 
 
    
@@ -300,7 +325,7 @@ export async function updateUser(userData: {
 
 export async function deleteUser(dni: string) {
   try {
-    // First, retrieve the user type and user_id
+    // Primero, recupera el user_id y el user_type
     const getUserQuery = `
       SELECT user_id, user_type FROM usuarios WHERE dni = $1
     `;
@@ -312,7 +337,7 @@ export async function deleteUser(dni: string) {
 
     const { user_id, user_type } = user.rows[0];
 
-    // Delete the user from the corresponding type-specific table
+    // Elimina al usuario de la tabla correspondiente a su tipo
     let deleteTypeQuery = '';
 
     switch (user_type) {
@@ -323,9 +348,23 @@ export async function deleteUser(dni: string) {
         deleteTypeQuery = 'DELETE FROM administrators WHERE user_id = $1';
         break;
       case 'teacher':
+        // Primero, elimina las asociaciones con materias
+        const deleteTeacherSubjectsQuery = `
+          DELETE FROM teacher_subjects WHERE teacher_id = (SELECT teacher_id FROM teachers WHERE user_id = $1)
+        `;
+        await db.query(deleteTeacherSubjectsQuery, [user_id]);
+
+        // Luego, elimina al profesor
         deleteTypeQuery = 'DELETE FROM teachers WHERE user_id = $1';
         break;
       case 'student':
+        // Primero, elimina las asociaciones con cursos
+        const deleteStudentCoursesQuery = `
+          DELETE FROM student_courses WHERE student_id = (SELECT student_id FROM students WHERE user_id = $1)
+        `;
+        await db.query(deleteStudentCoursesQuery, [user_id]);
+
+        // Luego, elimina al estudiante
         deleteTypeQuery = 'DELETE FROM students WHERE user_id = $1';
         break;
     }
@@ -334,13 +373,14 @@ export async function deleteUser(dni: string) {
       await db.query(deleteTypeQuery, [user_id]);
     }
 
-    // Delete the user from the users table
+    // Finalmente, elimina al usuario de la tabla usuarios
     const deleteUserQuery = `
       DELETE FROM usuarios WHERE dni = $1
     `;
     await db.query(deleteUserQuery, [dni]);
 
   } catch (error: any) {
+    console.error('Error deleting user:', error);
     throw new Error('Error deleting user: ' + error.message);
   }
 }

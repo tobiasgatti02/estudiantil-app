@@ -5,13 +5,14 @@ import { db, sql } from "@vercel/postgres";
 
 export async function getCarreras() {
   try {
-    const query = 'SELECT name FROM careers';
+    const query = 'SELECT * FROM careers';
     const result = await db.query(query);
     return result.rows;
   } catch (error: any) {
     throw new Error('Error fetching carreras: ' + error.message);
   }
 }
+
 
 export async function createCarrera(nombre: string) {
   try {

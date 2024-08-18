@@ -56,7 +56,7 @@ export default function CarrerasPage() {
       )}
       <ul>
         {carreras.map(carrera => (
-          <li key={carrera.id}>{carrera.name}</li>
+          <li key={carrera.career_id}>{carrera.name}</li>
         ))}
       </ul>
     </div>
