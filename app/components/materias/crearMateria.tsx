@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { getTeachers, createSubject, addTeacherToSubject, createSubjectSchedule, getSubjectsForCourse } from '@/app/lib/adminActions';
 import { get } from 'http';
+import Link from 'next/link';
 
 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -14,6 +15,8 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
   const [currentMonth, setCurrentMonth] = useState(1);
   const [schedules, setSchedules] = useState<{ [key: number]: any }>({});
   const [copiedSchedule, setCopiedSchedule] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     async function fetchTeachers() {
@@ -56,30 +59,28 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
     }));
   };
 
-
-
   const handleCreateSubject = async () => {
     if (!subjectName) {
-      alert('El nombre de la materia no puede estar vacío');
+      setErrorMessage('El nombre de la materia no puede estar vacío');
       return;
     }
-  
+
     try {
       console.log('Creating subject:', subjectName, courseId, selectedTeachers, schedules);
       const subjectId = await createSubject(Number(courseId), subjectName);
       console.log('Subject ID:', subjectId); // Ensure this is correct
-  
+
       // Check if subjectId is valid
       if (!subjectId) {
         throw new Error('Invalid subject ID');
       }
-  
+
       for (const teacherId of selectedTeachers) {
         if (teacherId) {
           await addTeacherToSubject(teacherId, subjectId);
         }
       }
-  
+
       for (const [month, monthSchedules] of Object.entries(schedules)) {
         for (const [day, daySchedules] of Object.entries(monthSchedules)) {
           // Explicitly type daySchedules as an array of your schedule type
@@ -97,19 +98,15 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
         }
       }
       await onSubjectCreated();
- 
-      
-  
-      alert('Materia creada exitosamente');
+
+      setSuccessMessage('Materia creada exitosamente');
+      setErrorMessage('');
     } catch (error) {
       console.error('Error creating subject:', error);
-      alert('Error al crear la materia');
+      setErrorMessage('Error al crear la materia');
+      setSuccessMessage('');
     }
   };
-
-  
-  
-  
 
   const renderScheduleTable = () => {
     const daysInMonth = new Date(2024, currentMonth, 0).getDate();
@@ -144,7 +141,6 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
                   ]
                 }
               }));
-              
             }
 
             function handleAddScheduleEntry(day: number): void {
@@ -158,13 +154,10 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
                   ]
                 }
               }));
-              
             }
 
             function handleCopySchedule(day: number, scheduleIndex: number): void {
               setCopiedSchedule(schedules[currentMonth]?.[day]?.[scheduleIndex]);
-              
-          
             }
 
             function handlePasteSchedule(day: number, scheduleIndex: number): void {
@@ -180,7 +173,6 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
                     ]
                   }
                 }));
-                
               }
             }
 
@@ -249,9 +241,11 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Crear nueva materia</h1>
+
       
+
       <div className="mb-4">
         <label className="block mb-2">Nombre de la materia:</label>
         <input
@@ -290,12 +284,12 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
 
       <div className="mb-4">
         <label className="block mb-2">Horarios:</label>
-        <div className="flex mb-2">
+        <div className="flex flex-wrap mb-2">
           {monthNames.map((month, index) => (
             <button
               key={index}
               onClick={() => setCurrentMonth(index + 1)}
-              className={`px-2 py-1 mr-1 ${currentMonth === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
+              className={`px-2 py-1 mr-1 mb-1 ${currentMonth === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded`}
             >
               {month}
             </button>
@@ -307,7 +301,11 @@ export default function CreateSubject({ onSubjectCreated }: { onSubjectCreated: 
       <button onClick={handleCreateSubject} className="px-4 py-2 bg-green-500 text-white rounded">
         Guardar materia
       </button>
+      {errorMessage && <div className="mb-4 mt-8  p-2 bg-red-500 text-white rounded">{errorMessage}</div>}
+      {successMessage && <div className="mb-4 mt-8 p-2 bg-green-500 text-white rounded">{successMessage}</div>}
+      <Link href={`/home/admin/cursos/curso/${courseId}`} className="block text-blue-500 hover:underline ml-12 mb-4 inline-block">
+                ← Volver a la lista de cursos
+            </Link>
     </div>
   );
 }
-
