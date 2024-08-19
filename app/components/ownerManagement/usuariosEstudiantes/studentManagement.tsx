@@ -6,6 +6,8 @@ interface Student {
     name: string;
     dni: string;
     password: string;
+    role: string;
+    permissions: any;
 }
 
 interface StudentManagementProps {
@@ -67,6 +69,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
         try {
             await updateUser({
                 ...student,
+                // @ts-ignore
                 name: String(student.name),
                 dni: String(student.dni),
                 password: String(student.password),
