@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createUser, updateUser, deleteUser, getUsers } from '@/app/lib/userActions';
+import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
 import Logout from '@/app/auth/logOut/page';
 
 const PermissionCheckbox = ({ id, checked, onChange, label }: { id: string, checked: boolean, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, label: string }) => (
@@ -14,14 +14,7 @@ const PermissionCheckbox = ({ id, checked, onChange, label }: { id: string, chec
     </div>
 );
 
-type AdminFormProps = {
-    admin: any;
-    onChange: any;
-    onSubmit: any;
-    onDelete: any;
-};
-
-const AdminForm = ({ admin, onChange, onSubmit, onDelete }: AdminFormProps) => (
+const AdminForm = ({ admin, onChange, onSubmit, onDelete }: { admin: any, onChange: any, onSubmit: any, onDelete: any }) => (
     <div key={admin.dni} className="bg-gray-100 p-4 mb-4 rounded">
         <input
             type="text"
@@ -43,12 +36,12 @@ const AdminForm = ({ admin, onChange, onSubmit, onDelete }: AdminFormProps) => (
         />
         <div className="mb-2">
             <label className="block mb-1">Permisos:</label>
-            {Object.entries(admin.permissions).map(([key, value]) => (
+            {admin.permissions && Object.entries(admin.permissions).map(([key, value]) => (
                 <PermissionCheckbox
                     key={key}
-                    id={`${admin.dni}-${key}`}
+                    id={key}
                     checked={value as boolean}
-                    onChange={(e) => onChange(admin.dni, `permissions.${key}`, e.target.checked)}
+                    onChange={(e) => onChange(admin.dni, key, e.target.checked)}
                     label={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
                 />
             ))}
@@ -68,7 +61,7 @@ const AdminForm = ({ admin, onChange, onSubmit, onDelete }: AdminFormProps) => (
     </div>
 );
 
-const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSection: string, fetchUsers: any }) => {
+const AdminManagement = ({ users, activeSubSection, fetchUsers }: { users: any, activeSubSection: any, fetchUsers: any }) => {
     const [admins, setAdmins] = useState(users);
     const [newAdmin, setNewAdmin] = useState({
         name: '',
@@ -89,24 +82,25 @@ const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSec
         setAdmins(users);
     }, [users]);
 
-  
+    const handleInputChange = (e: { target: { name: any; value: any; type: any; checked: any; }; }) => {
+        const { name, value, type, checked } = e.target;
+        setNewAdmin(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+            permissions: type === 'checkbox' ? { ...prev.permissions, [name]: checked } : prev.permissions
+        }));
+    };
 
     const handleAdminChange = (dni: any, key: string, value: any) => {
-        setAdmins((prev: { dni: any; permissions: any; }[]) => prev.map((admin: { dni: any; permissions: any; }) => {
+        setAdmins((prev: { [x: string]: any; dni: any; permissions: { [x: string]: any; }; }[]) => prev.map((admin: { [x: string]: any; dni: any; permissions: { [x: string]: any; }; }) => {
             if (admin.dni === dni) {
-                if (key.startsWith('permissions.')) {
-                    const permissionKey = key.split('.')[1];
-                    return {
-                        ...admin,
-                        permissions: {
-                            ...admin.permissions,
-                            [permissionKey]: value
-                        }
-                    };
-                }
                 return {
                     ...admin,
-                    [key]: value
+                    [key]: key === 'password' ? value : admin[key],
+                    permissions: {
+                        ...admin.permissions,
+                        [key]: key !== 'password' ? value : admin.permissions[key]
+                    }
                 };
             }
             return admin;
@@ -132,7 +126,7 @@ const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSec
                     canCreateCourses: false
                 }
             });
-            getUsers();
+            fetchUsers();
         } catch (error) {
             console.error('Error creating admin:', error);
             alert('Error al crear administrador');
@@ -144,7 +138,7 @@ const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSec
             try {
                 await deleteUser(dni);
                 alert('Administrador eliminado exitosamente');
-                getUsers();
+                fetchUsers();
             } catch (error) {
                 console.error('Error deleting admin:', error);
                 alert('Error al eliminar administrador');
@@ -152,22 +146,11 @@ const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSec
         }
     };
 
-    const handleSaveChanges = async (admin: { permissions: any; name?: string | undefined; dni: string; password?: string | undefined; role?: string | undefined; }) => {
+    const handleSaveChanges = async (admin: { name?: string; dni: string; password?: string; role?: string; permissions?: { can_create_teachers?: boolean; can_delete_teachers?: boolean; can_create_students?: boolean; can_delete_students?: boolean; can_create_careers?: boolean; can_create_courses?: boolean; }; }) => {
         try {
-            await updateUser({
-                ...admin,
-                role: 'admin',
-                permissions: {
-                    can_create_teachers: admin.permissions.canCreateTeachers,
-                    can_delete_teachers: admin.permissions.canDeleteTeachers,
-                    can_create_students: admin.permissions.canCreateStudents,
-                    can_delete_students: admin.permissions.canDeleteStudents,
-                    can_create_careers: admin.permissions.canCreateCareers,
-                    can_create_courses: admin.permissions.canCreateCourses
-                }
-            });
+            await updateUser(admin);
             alert('Cambios guardados exitosamente');
-            getUsers();
+            fetchUsers();
         } catch (error) {
             console.error('Error updating admin:', error);
             alert('Error al guardar cambios');
@@ -192,7 +175,58 @@ const AdminManagement = ({ users, activeSubSection }: { users: any, activeSubSec
             )}
             {activeSubSection === 'Crear nuevo' && (
                 <form onSubmit={handleCreateAdmin} className="bg-gray-100 p-4 rounded">
-                    {/* ... (código existente para crear nuevo administrador) ... */}
+                    <h2 className="text-xl font-bold mb-4">Crear nuevo administrador</h2>
+                    <div className="mb-2">
+                        <label htmlFor="name" className="block">Nombre:</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={newAdmin.name}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label htmlFor="dni" className="block">DNI:</label>
+                        <input
+                            type="text"
+                            id="dni"
+                            name="dni"
+                            value={newAdmin.dni}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label htmlFor="password" className="block">Contraseña:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={newAdmin.password}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label className="block mb-1">Permisos:</label>
+                        {Object.entries(newAdmin.permissions).map(([key, value]) => (
+                            <PermissionCheckbox
+                                key={key}
+                                id={key}
+                                checked={value as boolean}
+                                onChange={handleInputChange}
+                                label={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                            />
+                        ))}
+                    </div>
+                    <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
+                        Crear administrador
+                    </button>
                 </form>
             )}
         </div>

@@ -20,7 +20,7 @@ export const authConfig: NextAuthConfig = {
     async authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
-      const isOnAdmin = nextUrl.pathname.startsWith('/home/admin/carreras');
+      const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
       const isOnTeacher = nextUrl.pathname.startsWith('/home/teacher');
       const isOnStudent = nextUrl.pathname.startsWith('/home/student');
       const baseUrl = process.env.NEXTAUTH_URL;
