@@ -41,31 +41,29 @@ const LoginForm = () => {
     }
 
     return (
-        <>
-            <div className="text-xl text-red-500">{error}</div>
-            <form 
-                className="my-5 flex flex-col items-center border p-3 border-gray-200 rounded-md"
-                onSubmit={onSubmit}>
-                <div className="my-2">
-                    <label htmlFor="name">Username</label>
-                    <input className="border mx-2 border-gray-500 rounded" type="text" name="name" id="name" required />
-                </div>
-
-                <div className="my-2">
-                    <label htmlFor="password">Password</label>
-                    <input className="border mx-2 border-gray-500 rounded" type="password" name="password" id="password" required />
-                </div>
-
-                <div className="my-2">
-                    <label htmlFor="dni">Dni</label>
-                    <input className="border mx-2 border-gray-500 rounded" type="text" name="dni" id="dni" required />
-                </div>
-
-                <button type="submit" className="bg-orange-300 mt-4 rounded flex justify-center items-center w-36" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Credential Login'}
-                </button>
-            </form>
-        </>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-center text-gray-800">Iniciar Sesión</h2>
+                {error && <div className="p-2 mb-4 text-white bg-red-500 rounded">{error}</div>}
+                <form className="space-y-4" onSubmit={onSubmit}>
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Username</label>
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="text" name="name" id="name" required />
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="password" name="password" id="password" required />
+                    </div>
+                    <div>
+                        <label htmlFor="dni" className="block text-sm font-medium text-gray-700">Dni</label>
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="text" name="dni" id="dni" required />
+                    </div>
+                    <button type="submit" className="w-full py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled={loading}>
+                        {loading ? 'Logging in...' : 'Credential Login'}
+                    </button>
+                </form>
+            </div>
+        </div>
     );
 };
 

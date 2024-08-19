@@ -4,7 +4,7 @@ import { getUsersByRole } from '@/app/lib/userActions';
 import AdminManagement from '@/app/components/ownerManagement/usuariosAdmin/adminManagement';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
 import StudentManagement from '@/app/components/ownerManagement/usuariosEstudiantes/studentManagement';
-
+import Logout from '@/app/auth/logOut/page';
 const OwnerHomePage = () => {
     const [activeSection, setActiveSection] = useState('Administradores');
     const [activeSubSection, setActiveSubSection] = useState('Existentes');
@@ -40,7 +40,11 @@ const OwnerHomePage = () => {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Gestionar usuarios</h1>
+                <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-800">Gestionar usuarios</h1>
+                <Logout />
+                </div>
+            
             <div className="mb-4">
                 {['Administradores', 'Profesores', 'Alumnos'].map((section) => (
                     <button 
@@ -88,6 +92,8 @@ const OwnerHomePage = () => {
                     canDelete={false}
                 />
             )}
+
+            
         </div>
     );
 };
