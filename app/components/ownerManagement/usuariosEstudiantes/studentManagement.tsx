@@ -52,10 +52,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
         }
     };
 
-    const handleDeleteStudent = async (id: string) => {
+    const handleDeleteStudent = async (dni: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este estudiante?')) {
             try {
-                await deleteUser(id.toString());
+                await deleteUser(dni);
                 alert('Estudiante eliminado exitosamente');
                 fetchUsers();
             } catch (error) {
@@ -88,7 +88,6 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                 <div>
                     {users.map((student) => (
                         <div key={student.dni} className="bg-gray-100 p-4 mb-4 rounded">
-                            
                             <input 
                                 type="text" 
                                 defaultValue={student.name} 
@@ -107,7 +106,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                                 className="mb-2 p-2 w-full" 
                                 onChange={(e) => student.password = e.target.value} 
                             />
-                            {canDelete && (
+                            { (
                                 <button 
                                     onClick={() => handleDeleteStudent(student.dni)} 
                                     className="bg-red-500 text-white px-4 py-2 mr-2"

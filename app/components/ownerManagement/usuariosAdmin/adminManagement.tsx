@@ -1,6 +1,6 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import { getUsersByRole, updateUser, createUser } from '@/app/lib/userActions';
+import { getUsersByRole, updateUser, createUser, deleteUser } from '@/app/lib/userActions';
+import { useState } from 'react';
 
 const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   users: any[],
@@ -38,26 +38,8 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
 
   const handleCreateAdmin = async () => {
     try {
-      await createUser({
-        name: newAdmin.name,
-        dni: newAdmin.dni,
-        password: newAdmin.password,
-        user_type: 'admin',
-        permissions: newAdmin.permissions
-      });
-      setNewAdmin({
-        name: '',
-        dni: '',
-        password: '',
-        permissions: {
-          canCreateTeachers: false,
-          canDeleteTeachers: false,
-          canCreateStudents: false,
-          canDeleteStudents: false,
-          canCreateCareers: false,
-          canCreateCourses: false
-        }
-      });
+        // @ts-ignore
+      await createUser(newAdmin);
       fetchUsers();
     } catch (error) {
       console.error('Error creating admin:', error);
@@ -86,15 +68,19 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   const handleSaveChanges = async (adminId: number) => {
     try {
       const adminData = editingAdmin[adminId];
-      await updateUser({
-        dni: adminData.dni,
-        password: adminData.password,
-        role: 'admin',
-        permissions: adminData.permissions
-      });
+      await updateUser(adminData);
       fetchUsers();
     } catch (error) {
       console.error('Error updating admin:', error);
+    }
+  };
+
+  const handleDeleteAdmin = async (dni: string) => {
+    try {
+      await deleteUser(dni);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting admin:', error);
     }
   };
 
@@ -103,14 +89,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
       ...prev,
       [user.user_id]: {
         ...user,
-        permissions: user.additional_info?.permissions || {
-          canCreateTeachers: false,
-          canDeleteTeachers: false,
-          canCreateStudents: false,
-          canDeleteStudents: false,
-          canCreateCareers: false,
-          canCreateCourses: false
-        }
+        permissions: user.additional_info?.permissions || {}
       }
     }));
   };
@@ -316,6 +295,12 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
                         className="px-4 py-2 bg-green-500 text-white rounded ml-2"
                       >
                         Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAdmin(user.dni)}
+                        className="px-4 py-2 bg-red-500 text-white rounded ml-2"
+                      >
+                        Eliminar
                       </button>
                     </td>
                   </tr>
