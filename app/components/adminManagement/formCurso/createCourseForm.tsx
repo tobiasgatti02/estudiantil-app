@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCourseByDetails, createCourse, getCarreras } from '@/app/lib/adminActions'; // Asegúrate de tener getCarreras
+import { getCourseByDetails, createCourse, getCarreras } from '@/app/lib/adminActions';
 import { useRouter } from 'next/navigation';
 
-export default function CreateCourseForm() {
-  const [career, setCareer] = useState<string | undefined>(undefined);
-  const [year, setYear] = useState<string | undefined>(undefined);
-  const [careerYear, setCareerYear] = useState<string | undefined>(undefined);
-  const [division, setDivision] = useState<string | undefined>(undefined);
+export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated: () => void }) {
+  const [career, setCareer] = useState<string | undefined>('Default Career');
+  const [year, setYear] = useState<string | undefined>('2023');
+  const [careerYear, setCareerYear] = useState<string | undefined>('Primer año');
+  const [division, setDivision] = useState<string | undefined>('División A');
   const [carreraOptions, setCarreraOptions] = useState<string[]>([]);
   const router = useRouter();
 
@@ -17,6 +17,9 @@ export default function CreateCourseForm() {
       try {
         const fetchedCarreras = await getCarreras();
         setCarreraOptions(fetchedCarreras.map(carrera => carrera.name));
+        if (fetchedCarreras.length === 1) {
+          setCareer(fetchedCarreras[0].name);
+        }
       } catch (error) {
         console.error('Error fetching carreras:', error);
       }
@@ -31,7 +34,6 @@ export default function CreateCourseForm() {
       return;
     }
 
-    // Mapeo de valores a equivalentes numéricos
     const careerYearMapping: { [key: string]: number } = {
       'Primer año': 1,
       'Segundo año': 2,
@@ -60,7 +62,6 @@ export default function CreateCourseForm() {
     }
 
     try {
-      
       const existingCourses = await getCourseByDetails(career, parseInt(year), mappedCareerYear, mappedDivision);
       if (existingCourses.length > 0) {
         console.error('Course already exists');
@@ -68,11 +69,11 @@ export default function CreateCourseForm() {
       }
 
       await createCourse(career, parseInt(year), mappedCareerYear, mappedDivision);
-      router.refresh();
-      setCareer(undefined);
-      setYear(undefined);
-      setCareerYear(undefined);
-      setDivision(undefined);
+      onCourseCreated();
+      setCareer('Default Career');
+      setYear('2023');
+      setCareerYear('Primer año');
+      setDivision('División A');
     } catch (error) {
       console.error('Error creating course:', error);
     }
@@ -86,7 +87,6 @@ export default function CreateCourseForm() {
           id="career"
           value={career}
           onChange={(e) => setCareer(e.target.value)}
-          required
           className="w-full px-3 py-2 border rounded"
         >
           <option value="" disabled>Select a career</option>
@@ -101,7 +101,6 @@ export default function CreateCourseForm() {
           id="year"
           value={year}
           onChange={(e) => setYear(e.target.value)}
-          required
           className="w-full px-3 py-2 border rounded"
         >
           <option value="" disabled>Select a year</option>
@@ -116,7 +115,6 @@ export default function CreateCourseForm() {
           id="careerYear"
           value={careerYear}
           onChange={(e) => setCareerYear(e.target.value)}
-          required
           className="w-full px-3 py-2 border rounded"
         >
           <option value="" disabled>Select career year</option>
@@ -131,7 +129,6 @@ export default function CreateCourseForm() {
           id="division"
           value={division}
           onChange={(e) => setDivision(e.target.value)}
-          required
           className="w-full px-3 py-2 border rounded"
         >
           <option value="" disabled>Select division</option>

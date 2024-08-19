@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getCourses } from '@/app/lib/adminActions';
 import Link from 'next/link';
+import CreateCourseForm from '../formCurso/createCourseForm';
 
 export default function ClientCourseList() {
   interface Course {
@@ -30,6 +31,18 @@ export default function ClientCourseList() {
     fetchCourses();
   }, []);
 
+  const handleCourseCreated = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedCourses = await getCourses();
+      setCourses(fetchedCourses);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading courses...</div>;
   }
@@ -37,7 +50,8 @@ export default function ClientCourseList() {
   return (
     <div className="mt-4">
       <h2 className="text-xl font-semibold mb-2">Cursos existentes</h2>
-      <ul className="space-y-2">
+      <CreateCourseForm onCourseCreated={handleCourseCreated} />
+      <ul className="space-y-2 mt-4">
         {courses.map((course) => (
           <li key={course.course_id} className="bg-white p-4 rounded shadow">
             <span>{course.career_name} - {course.year} - {course.career_year}º año - División {course.division}</span>

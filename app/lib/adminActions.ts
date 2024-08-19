@@ -25,6 +25,54 @@ export async function createCarrera(nombre: string) {
   }
 }
 
+export async function deleteCarrera(careerId: number) {
+  try {
+    await db.query('BEGIN');
+
+    const deleteSubjectScheduleQuery = `
+      DELETE FROM subject_schedules
+      WHERE subject_id IN (SELECT subject_id FROM subjects WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1))
+    `;
+    await db.query(deleteSubjectScheduleQuery, [careerId]);
+
+    const deleteTeacherSubjectsQuery = `
+      DELETE FROM teacher_subjects
+      WHERE subject_id IN (SELECT subject_id FROM subjects WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1))
+    `;
+    await db.query(deleteTeacherSubjectsQuery, [careerId]);
+
+    
+
+    // Eliminar las materias asociadas a los cursos de la carrera
+    const deleteSubjectsQuery = `
+      DELETE FROM subjects
+      WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1)
+    `;
+    await db.query(deleteSubjectsQuery, [careerId]);
+
+    const deleteStudentCoursesQuery = `
+
+      DELETE FROM student_courses
+      WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1)
+    `;
+    await db.query(deleteStudentCoursesQuery, [careerId]);
+    
+
+    // Eliminar los cursos asociados a la carrera
+    const deleteCoursesQuery = 'DELETE FROM courses WHERE career_id = $1';
+    await db.query(deleteCoursesQuery, [careerId]);
+
+    // Eliminar la carrera
+    const deleteCareerQuery = 'DELETE FROM careers WHERE career_id = $1';
+    await db.query(deleteCareerQuery, [careerId]);
+
+    await db.query('COMMIT');
+  } catch (error: any) {
+    await db.query('ROLLBACK');
+    throw new Error('Error deleting carrera: ' + error.message);
+  }
+}
+
 
 
 

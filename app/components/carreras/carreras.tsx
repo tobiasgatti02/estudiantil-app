@@ -24,19 +24,22 @@ export default function CarreraForm({ onCarreraCreated }: { onCarreraCreated: ()
   };
 
   return (
-    <div>
-      <h2>Crear nueva carrera</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="p-4 bg-white shadow-md rounded-md">
+      <h2 className="text-xl font-bold mb-4">Crear nueva carrera</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Nombre de la carrera"
+          className="w-full p-2 border rounded"
           required
         />
-        <button type="submit">Crear carrera</button>
+        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+          Crear carrera
+        </button>
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   );
 }
