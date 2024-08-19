@@ -33,7 +33,7 @@ export const authConfig: NextAuthConfig = {
             }
             return true;
           case 'admin':
-            if (isOnOwner) {
+            if (!isOnAdmin) {
               return NextResponse.redirect(baseUrl + '/home/admin/carreras');
             }
             return true;

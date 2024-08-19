@@ -20,17 +20,7 @@ const LoginForm = () => {
                 console.error(response.error);
                 setError(response.error);
             } else {
-                if (response.role === "owner") {
-                    router.push("/home/owner");
-                }
-                else if (response.role === "admin") {
-                    router.push("/home/admin/carreras");
-                   
-                }
-                
-                else {
-                    router.push("/home");
-                }
+                console.log("response",response.role);
             }
         } catch (e) {
             console.error(e);
