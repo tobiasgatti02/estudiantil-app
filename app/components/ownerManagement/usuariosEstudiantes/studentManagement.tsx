@@ -125,7 +125,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                     ))}
                 </div>
             )}
-            {activeSubSection === 'Crear nuevo' && canCreate && (
+            {activeSubSection === 'Crear nuevo' && (
                 <form onSubmit={handleCreateStudent} className="bg-gray-100 p-4 rounded">
                     <h2 className="text-xl font-bold mb-4">Crear nuevo estudiante</h2>
                     <div className="mb-2">

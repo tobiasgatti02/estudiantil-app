@@ -51,6 +51,7 @@ const TeacherManagement = ({ users, activeSubSection, fetchUsers, canCreate, can
 
     const handleSaveChanges = async (teacher: { name?: string; dni: string; password?: string; role?: string; permissions?: { can_create_teachers?: boolean; can_delete_teachers?: boolean; can_create_students?: boolean; can_delete_students?: boolean; can_create_careers?: boolean; can_create_courses?: boolean; }; }) => {
         try {
+            // @ts-ignore
             await updateUser(teacher);
             alert('Cambios guardados exitosamente');
             fetchUsers();
