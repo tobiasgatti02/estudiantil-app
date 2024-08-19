@@ -146,36 +146,36 @@ export async function getUsersByRole(role: string) {
   try {
     const query = `
       SELECT u.*, 
-        CASE 
-          WHEN u.user_type = 'admin' THEN (
+    CASE 
+        WHEN u.user_type = 'admin' THEN (
             SELECT json_build_object(
-              'permissions', json_build_object(
-                'canCreateTeachers', a.can_create_teachers,
-                'canDeleteTeachers', a.can_delete_teachers,
-                'canCreateStudents', a.can_create_students,
-                'canDeleteStudents', a.can_delete_students,
-                'canCreateCareers', a.can_create_careers,
-                'canCreateCourses', a.can_create_courses
-              )
+                'permissions', json_build_object(
+                    'canCreateTeachers', a.can_create_teachers,
+                    'canDeleteTeachers', a.can_delete_teachers,
+                    'canCreateStudents', a.can_create_students,
+                    'canDeleteStudents', a.can_delete_students,
+                    'canCreateCareers', a.can_create_careers,
+                    'canCreateCourses', a.can_create_courses
+                )
             )
             FROM administrators a 
             WHERE a.user_id = u.user_id
-          )
-          WHEN u.user_type = 'student' THEN (
+        )
+        WHEN u.user_type = 'student' THEN (
             SELECT json_build_object('student_id', s.student_id)
             FROM students s
             WHERE s.user_id = u.user_id
-          )
-          WHEN u.user_type = 'teacher' THEN (
+        )
+        WHEN u.user_type = 'teacher' THEN (
             SELECT json_build_object('teacher_id', t.teacher_id)
             FROM teachers t
             WHERE t.user_id = u.user_id
-          )
-          ELSE NULL
-        END as additional_info
-      FROM usuarios u
-      WHERE u.user_type = $1
-      ORDER BY u.user_id DESC
+        )
+        ELSE NULL
+    END as additional_info
+FROM usuarios u
+WHERE u.user_type = $1
+ORDER BY u.user_id DESC;
     `;
     const values = [role];
     const result = await db.query(query, values);
@@ -256,68 +256,52 @@ export async function getAdminProps(dni:string) {
 
 
 
-export async function updateUser(userData: { 
-  name?: string, 
-  dni: string, 
-  password?: string, 
-  role?: string, 
-  permissions?: {
-      can_create_teachers?: boolean,
-      can_delete_teachers?: boolean,
-      can_create_students?: boolean,
-      can_delete_students?: boolean,
-      can_create_careers?: boolean,
-      can_create_courses?: boolean
-  }
-}) {
-  const { name, dni, password, role, permissions } = userData;
-
-  // Construct the update query for the 'users' table
-  let userUpdates: string[] = [];
-  if (name) userUpdates.push(`name = '${name}'`);
-  if (password) userUpdates.push(`password = '${password}'`);
-  if (role) userUpdates.push(`user_type = '${role}'`);
-
-  if (userUpdates.length === 0) {
-      throw new Error('No fields to update');
-  }
-
-  let updateUserQuery = `
+export async function updateUser(userData: { dni: string, password: string, role: string, permissions: any }) {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Update user information
+    const updateUserQuery = `
       UPDATE usuarios
-      SET ${userUpdates.join(', ')}
-      WHERE dni = '${dni}'
-      RETURNING user_id;
-  `;
+      SET password = $1
+      WHERE dni = $2
+    `;
+    const updateUserValues = [userData.password, userData.dni];
+    await client.query(updateUserQuery, updateUserValues);
 
-  // Execute the query to update 'users'
-  const result = await db.query(updateUserQuery);
-  const userId = result.rows[0]?.user_id;
+    // Update admin permissions if the role is 'admin'
+    if (userData.role === 'admin' && userData.permissions) {
+      const updateAdminQuery = `
+        UPDATE administrators
+        SET can_create_teachers = $1,
+            can_delete_teachers = $2,
+            can_create_students = $3,
+            can_delete_students = $4,
+            can_create_careers = $5,
+            can_create_courses = $6
+        WHERE user_id = (SELECT user_id FROM usuarios WHERE dni = $7)
+      `;
+      const updateAdminValues = [
+        userData.permissions.canCreateTeachers || false,
+        userData.permissions.canDeleteTeachers || false,
+        userData.permissions.canCreateStudents || false,
+        userData.permissions.canDeleteStudents || false,
+        userData.permissions.canCreateCareers || false,
+        userData.permissions.canCreateCourses || false,
+        userData.dni
+      ];
+      await client.query(updateAdminQuery, updateAdminValues);
+    }
 
-  // If the user is 'admin', update the 'administrators' table
-  if (role === 'admin' && permissions && userId) {
-      let adminUpdates: string[] = [];
-      if (permissions.can_create_teachers !== undefined) adminUpdates.push(`can_create_teachers = ${permissions.can_create_teachers}`);
-      if (permissions.can_delete_teachers !== undefined) adminUpdates.push(`can_delete_teachers = ${permissions.can_delete_teachers}`);
-      if (permissions.can_create_students !== undefined) adminUpdates.push(`can_create_students = ${permissions.can_create_students}`);
-      if (permissions.can_delete_students !== undefined) adminUpdates.push(`can_delete_students = ${permissions.can_delete_students}`);
-      if (permissions.can_create_careers !== undefined) adminUpdates.push(`can_create_careers = ${permissions.can_create_careers}`);
-      if (permissions.can_create_courses !== undefined) adminUpdates.push(`can_create_courses = ${permissions.can_create_courses}`);
-
-      if (adminUpdates.length > 0) {
-          let updateAdminQuery = `
-              UPDATE administrators 
-              SET ${adminUpdates.join(', ')}
-              WHERE user_id = ${userId};
-          `;
-
-          // Execute the query to update 'administrators'
-          await db.query(updateAdminQuery);
-      }
+    await client.query('COMMIT');
+  } catch (error: any) {
+    await client.query('ROLLBACK');
+    throw new Error('Error updating user: ' + error.message);
+  } finally {
+    client.release();
   }
-
-  return { success: true };
 }
-
 
 
 

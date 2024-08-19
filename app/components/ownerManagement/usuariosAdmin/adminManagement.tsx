@@ -1,236 +1,332 @@
+"use client"
 import React, { useState, useEffect } from 'react';
-import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
-import Logout from '@/app/auth/logOut/page';
+import { getUsersByRole, updateUser, createUser } from '@/app/lib/userActions';
 
-const PermissionCheckbox = ({ id, checked, onChange, label }: { id: string, checked: boolean, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, label: string }) => (
-    <div>
-        <input
-            type="checkbox"
-            id={id}
-            checked={checked}
-            onChange={onChange}
-        />
-        <label htmlFor={id} className="ml-2">{label}</label>
-    </div>
-);
+const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
+  users: any[],
+  activeSubSection: string,
+  fetchUsers: () => void
+}) => {
+  const [newAdmin, setNewAdmin] = useState({
+    name: '',
+    dni: '',
+    password: '',
+    permissions: {
+      canCreateTeachers: false,
+      canDeleteTeachers: false,
+      canCreateStudents: false,
+      canDeleteStudents: false,
+      canCreateCareers: false,
+      canCreateCourses: false
+    }
+  });
 
-const AdminForm = ({ admin, onChange, onSubmit, onDelete }: { admin: any, onChange: any, onSubmit: any, onDelete: any }) => (
-    <div key={admin.dni} className="bg-gray-100 p-4 mb-4 rounded">
-        <input
-            type="text"
-            value={admin.name}
-            className="mb-2 p-2 w-full"
-            readOnly
-        />
-        <input
-            type="text"
-            value={admin.dni}
-            className="mb-2 p-2 w-full"
-            readOnly
-        />
-        <input
-            type="text"
-            value={admin.password}
-            className="mb-2 p-2 w-full"
-            onChange={(e) => onChange(admin.dni, 'password', e.target.value)}
-        />
-        <div className="mb-2">
-            <label className="block mb-1">Permisos:</label>
-            {admin.permissions && Object.entries(admin.permissions).map(([key, value]) => (
-                <PermissionCheckbox
-                    key={key}
-                    id={key}
-                    checked={value as boolean}
-                    onChange={(e) => onChange(admin.dni, key, e.target.checked)}
-                    label={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                />
-            ))}
-        </div>
-        <button
-            onClick={() => onDelete(admin.dni)}
-            className="bg-red-500 text-white px-4 py-2 mr-2"
-        >
-            Eliminar administrador
-        </button>
-        <button
-            onClick={() => onSubmit(admin)}
-            className="bg-green-500 text-white px-4 py-2"
-        >
-            Guardar cambios
-        </button>
-    </div>
-);
+  const [editingAdmin, setEditingAdmin] = useState<{ [key: number]: any }>({});
 
-const AdminManagement = ({ users, activeSubSection, fetchUsers }: { users: any, activeSubSection: any, fetchUsers: any }) => {
-    const [admins, setAdmins] = useState(users);
-    const [newAdmin, setNewAdmin] = useState({
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewAdmin(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePermissionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setNewAdmin(prev => ({
+      ...prev,
+      permissions: { ...prev.permissions, [name]: checked }
+    }));
+  };
+
+  const handleCreateAdmin = async () => {
+    try {
+      await createUser({
+        name: newAdmin.name,
+        dni: newAdmin.dni,
+        password: newAdmin.password,
+        user_type: 'admin',
+        permissions: newAdmin.permissions
+      });
+      setNewAdmin({
         name: '',
         dni: '',
         password: '',
-        user_type: 'admin',
         permissions: {
-            canCreateTeachers: false,
-            canDeleteTeachers: false,
-            canCreateStudents: false,
-            canDeleteStudents: false,
-            canCreateCareers: false,
-            canCreateCourses: false
+          canCreateTeachers: false,
+          canDeleteTeachers: false,
+          canCreateStudents: false,
+          canDeleteStudents: false,
+          canCreateCareers: false,
+          canCreateCourses: false
         }
-    });
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating admin:', error);
+    }
+  };
 
-    useEffect(() => {
-        setAdmins(users);
-    }, [users]);
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>, adminId: number) => {
+    const { name, value } = e.target;
+    setEditingAdmin(prev => ({
+      ...prev,
+      [adminId]: { ...prev[adminId], [name]: value }
+    }));
+  };
 
-    const handleInputChange = (e: { target: { name: any; value: any; type: any; checked: any; }; }) => {
-        const { name, value, type, checked } = e.target;
-        setNewAdmin(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-            permissions: type === 'checkbox' ? { ...prev.permissions, [name]: checked } : prev.permissions
-        }));
-    };
+  const handleEditPermissionsChange = (e: React.ChangeEvent<HTMLInputElement>, adminId: number) => {
+    const { name, checked } = e.target;
+    setEditingAdmin(prev => ({
+      ...prev,
+      [adminId]: {
+        ...prev[adminId],
+        permissions: { ...prev[adminId].permissions, [name]: checked }
+      }
+    }));
+  };
 
-    const handleAdminChange = (dni: any, key: string, value: any) => {
-        setAdmins((prev: { [x: string]: any; dni: any; permissions: { [x: string]: any; }; }[]) => prev.map((admin: { [x: string]: any; dni: any; permissions: { [x: string]: any; }; }) => {
-            if (admin.dni === dni) {
-                return {
-                    ...admin,
-                    [key]: key === 'password' ? value : admin[key],
-                    permissions: {
-                        ...admin.permissions,
-                        [key]: key !== 'password' ? value : admin.permissions[key]
-                    }
-                };
-            }
-            return admin;
-        }));
-    };
+  const handleSaveChanges = async (adminId: number) => {
+    try {
+      const adminData = editingAdmin[adminId];
+      await updateUser({
+        dni: adminData.dni,
+        password: adminData.password,
+        role: 'admin',
+        permissions: adminData.permissions
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating admin:', error);
+    }
+  };
 
-    const handleCreateAdmin = async (e: { preventDefault: () => void; }) => {
-        e.preventDefault();
-        try {
-            await createUser(newAdmin);
-            alert('Administrador creado exitosamente');
-            setNewAdmin({
-                name: '',
-                dni: '',
-                password: '',
-                user_type: 'admin',
-                permissions: {
-                    canCreateTeachers: false,
-                    canDeleteTeachers: false,
-                    canCreateStudents: false,
-                    canDeleteStudents: false,
-                    canCreateCareers: false,
-                    canCreateCourses: false
-                }
-            });
-            fetchUsers();
-        } catch (error) {
-            console.error('Error creating admin:', error);
-            alert('Error al crear administrador');
+  const startEditing = (user: any) => {
+    setEditingAdmin(prev => ({
+      ...prev,
+      [user.user_id]: {
+        ...user,
+        permissions: user.additional_info?.permissions || {
+          canCreateTeachers: false,
+          canDeleteTeachers: false,
+          canCreateStudents: false,
+          canDeleteStudents: false,
+          canCreateCareers: false,
+          canCreateCourses: false
         }
-    };
+      }
+    }));
+  };
 
-    const handleDeleteAdmin = async (dni: string) => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar este administrador?')) {
-            try {
-                await deleteUser(dni);
-                alert('Administrador eliminado exitosamente');
-                fetchUsers();
-            } catch (error) {
-                console.error('Error deleting admin:', error);
-                alert('Error al eliminar administrador');
-            }
-        }
-    };
-
-    const handleSaveChanges = async (admin: { name?: string; dni: string; password?: string; role?: string; permissions?: { can_create_teachers?: boolean; can_delete_teachers?: boolean; can_create_students?: boolean; can_delete_students?: boolean; can_create_careers?: boolean; can_create_courses?: boolean; }; }) => {
-        try {
-            await updateUser(admin);
-            alert('Cambios guardados exitosamente');
-            fetchUsers();
-        } catch (error) {
-            console.error('Error updating admin:', error);
-            alert('Error al guardar cambios');
-        }
-    };
-
-    return (
+  return (
+    <div>
+      {activeSubSection === 'Crear nuevo' && (
         <div>
-            <Logout />
-            {activeSubSection === 'Existentes' && (
-                <div>
-                    {admins.map((admin: { dni: React.Key | null | undefined; }) => (
-                        <AdminForm
-                            key={admin.dni}
-                            admin={admin}
-                            onChange={handleAdminChange}
-                            onSubmit={handleSaveChanges}
-                            onDelete={handleDeleteAdmin}
-                        />
-                    ))}
-                </div>
-            )}
-            {activeSubSection === 'Crear nuevo' && (
-                <form onSubmit={handleCreateAdmin} className="bg-gray-100 p-4 rounded">
-                    <h2 className="text-xl font-bold mb-4">Crear nuevo administrador</h2>
-                    <div className="mb-2">
-                        <label htmlFor="name" className="block">Nombre:</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={newAdmin.name}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label htmlFor="dni" className="block">DNI:</label>
-                        <input
-                            type="text"
-                            id="dni"
-                            name="dni"
-                            value={newAdmin.dni}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label htmlFor="password" className="block">Contraseña:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={newAdmin.password}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border rounded"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label className="block mb-1">Permisos:</label>
-                        {Object.entries(newAdmin.permissions).map(([key, value]) => (
-                            <PermissionCheckbox
-                                key={key}
-                                id={key}
-                                checked={value as boolean}
-                                onChange={handleInputChange}
-                                label={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                            />
-                        ))}
-                    </div>
-                    <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
-                        Crear administrador
-                    </button>
-                </form>
-            )}
+          <h2 className="text-xl font-bold mb-4">Crear Nuevo Administrador</h2>
+          <div className="mb-4">
+            <label className="block mb-2">Nombre:</label>
+            <input
+              type="text"
+              name="name"
+              value={newAdmin.name}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2">DNI:</label>
+            <input
+              type="text"
+              name="dni"
+              value={newAdmin.dni}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2">Contraseña:</label>
+            <input
+              type="password"
+              name="password"
+              value={newAdmin.password}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Permisos:</h3>
+          <div className="mb-4">
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateTeachers"
+                checked={newAdmin.permissions.canCreateTeachers}
+                onChange={handlePermissionChange}
+              />
+              Crear Profesores
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canDeleteTeachers"
+                checked={newAdmin.permissions.canDeleteTeachers}
+                onChange={handlePermissionChange}
+              />
+              Eliminar Profesores
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateStudents"
+                checked={newAdmin.permissions.canCreateStudents}
+                onChange={handlePermissionChange}
+              />
+              Crear Alumnos
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canDeleteStudents"
+                checked={newAdmin.permissions.canDeleteStudents}
+                onChange={handlePermissionChange}
+              />
+              Eliminar Alumnos
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateCareers"
+                checked={newAdmin.permissions.canCreateCareers}
+                onChange={handlePermissionChange}
+              />
+              Crear Carreras
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateCourses"
+                checked={newAdmin.permissions.canCreateCourses}
+                onChange={handlePermissionChange}
+              />
+              Crear Cursos
+            </label>
+          </div>
+          <button
+            onClick={handleCreateAdmin}
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Guardar Cambios
+          </button>
         </div>
-    );
+      )}
+
+      {activeSubSection === 'Existentes' && (
+        <div>
+          <h2 className="text-xl font-bold mb-4">Administradores Existentes</h2>
+          <table className="w-full border-collapse border border-gray-200">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 p-2">Nombre</th>
+                <th className="border border-gray-300 p-2">DNI</th>
+                <th className="border border-gray-300 p-2">Contraseña</th>
+                <th className="border border-gray-300 p-2">Permisos</th>
+                <th className="border border-gray-300 p-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                user.user_type === 'admin' && (
+                  <tr key={user.user_id}>
+                    <td className="border border-gray-300 p-2">{user.name}</td>
+                    <td className="border border-gray-300 p-2">{user.dni}</td>
+                    <td className="border border-gray-300 p-2">
+                      <input
+                        type="text"
+                        value={editingAdmin?.[user.user_id]?.password || ''}
+                        onChange={(e) => handleEditChange(e, user.user_id)}
+                        name="password"
+                        className="border rounded p-2"
+                      />
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {editingAdmin[user.user_id] && (
+                        <div>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateTeachers"
+                              checked={editingAdmin[user.user_id].permissions.canCreateTeachers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Profesores
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canDeleteTeachers"
+                              checked={editingAdmin[user.user_id].permissions.canDeleteTeachers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Eliminar Profesores
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateStudents"
+                              checked={editingAdmin[user.user_id].permissions.canCreateStudents}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Alumnos
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canDeleteStudents"
+                              checked={editingAdmin[user.user_id].permissions.canDeleteStudents}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Eliminar Alumnos
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateCareers"
+                              checked={editingAdmin[user.user_id].permissions.canCreateCareers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Carreras
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateCourses"
+                              checked={editingAdmin[user.user_id].permissions.canCreateCourses}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Cursos
+                          </label>
+                        </div>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      <button
+                        onClick={() => handleSaveChanges(user.user_id)}
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        onClick={() => startEditing(user)}
+                        className="px-4 py-2 bg-green-500 text-white rounded ml-2"
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  </tr>
+                )
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default AdminManagement;

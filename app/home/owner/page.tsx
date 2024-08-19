@@ -16,6 +16,7 @@ const OwnerHomePage = () => {
                          activeSection === 'Profesores' ? 'teacher' : 'student';
             const fetchedUsers = await getUsersByRole(role);
             setUsers(fetchedUsers);
+            console.log('Users fetched:', fetchedUsers);
         } catch (error) {
             console.error('Error fetching users:', error);
         }

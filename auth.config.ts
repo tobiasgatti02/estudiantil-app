@@ -29,7 +29,7 @@ export const authConfig: NextAuthConfig = {
         switch (auth.user?.role) {
           case 'owner':
             if (!isOnOwner) {
-              return NextResponse.redirect(baseUrl + '/home/owner');
+              return NextResponse.redirect('http://localhost:3000/home/owner');
             }
             return true;
           case 'admin':
