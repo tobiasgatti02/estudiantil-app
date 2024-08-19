@@ -118,13 +118,13 @@ export default function SubjectList() {
         </div>
       )}
 
-          <Link href={`/home/admin/cursos/curso/${courseId}/materia/crear`}
+<Link href={`/home/admin/cursos/curso/${courseId}/materia/crear`}
           className="block bg-[#4a90e2] text-white py-3 
           rounded-lg font-semibold 
-          mx-64 text-center mt-8
+          mx-4 sm:mx-8 md:mx-16 lg:mx-32 xl:mx-64 text-center mt-8
           transition duration-300 ease-in-out 
           hover:bg-[#357ABD] focus:outline-none 
-          focus:ring-2 focus:ring-[#357ABD]">
+          focus:ring-2 focus:ring-[#357ABD] w-full sm:w-auto">
               Crear Nueva Materia
           </Link>
     </div>
