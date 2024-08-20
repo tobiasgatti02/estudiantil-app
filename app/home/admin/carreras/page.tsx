@@ -20,6 +20,7 @@ export default function CarrerasPage() {
 
   useEffect(() => {
     if (user && user.permissions) {
+      // @ts-ignore
       setCanCreateCareers(user.permissions.canCreateCareers);
   }
     async function fetchCarreras() {
