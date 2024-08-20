@@ -408,13 +408,14 @@ export default function SubjectSchedule() {
                 </>
               ) : (
                 <>
+                <div className='flex gap-2'>
                   <span className="block mb-1">Día: {schedule.day_of_month}</span>
                   <span className="block mb-1">Entrada: {schedule.start_time}</span>
                   <span className="block mb-1">Salida: {schedule.end_time}</span>
                   <span className="block mb-1">Lugar: {schedule.location}</span>
                   <span className="block mb-1">Aula: {schedule.classroom}</span>
                   <span className="block mb-1">Mes: {schedule.month}</span>
-                  <div className="flex gap-2 mt-2">
+                  <div className="space-x-2 ">
                     <button
                       onClick={() => setEditSchedule(schedule)}
                       className="text-blue-500 hover:underline"
@@ -427,6 +428,7 @@ export default function SubjectSchedule() {
                     >
                       Eliminar
                     </button>
+                  </div>
                   </div>
                 </>
               )}
