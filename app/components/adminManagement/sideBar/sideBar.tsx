@@ -18,7 +18,7 @@ export default function Sidebar() {
   return (
     <div className="relative">
       <button
-        className="md:hidden p-2 text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="md:hidden p-2 text-gray-800 bg-white rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-transform mt-4 ml-4 transform hover:scale-110"
         onClick={toggleMenu}
       >
         <span className="sr-only">Abrir menú</span>
@@ -31,10 +31,9 @@ export default function Sidebar() {
         </svg>
       </button>
 
-      {/* New button to close the menu */}
       {isOpen && (
         <button
-          className="md:hidden p-2 text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 absolute top-4 right-4"
+          className="md:hidden p-2 text-gray-800 bg-white rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 absolute top-4 right-4 transition-transform transform hover:scale-110"
           onClick={closeMenu}
         >
           <span className="sr-only">Cerrar menú</span>
@@ -45,17 +44,17 @@ export default function Sidebar() {
       )}
 
       <nav
-        className={`fixed md:relative top-0 left-0 w-64 bg-gray-800 h-screen text-white p-4 md:p-4 md:w-64 ${isOpen ? 'block' : 'hidden'} md:block`}
+        className={`fixed md:relative top-0 left-0 w-64 bg-gradient-to-r from-gray-800 to-gray-900 h-screen text-white p-6 md:p-4 md:w-64 shadow-xl transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
-        <ul>
+        <ul className="space-y-4">
           {menuItems.map((item) => (
-            <li key={item.href} className="mb-2">
-              <Link href={item.href} className="hover:text-gray-300" onClick={closeMenu}>
+            <li key={item.href}>
+              <Link href={item.href} className="block px-4 py-2 text-lg font-medium hover:bg-gray-700 hover:rounded-md transition-colors duration-200" onClick={closeMenu}>
                 {item.label}
               </Link>
             </li>
           ))}
-          <li className='mb-2'>
+          <li>
             <Logout />
           </li>
         </ul>
