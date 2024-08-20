@@ -9,7 +9,6 @@ export default function CrearMateria() {
 
     const handleSubjectCreated = () => {
         console.log('Subject created successfully');
-        // Aquí puedes agregar cualquier lógica adicional que necesites después de crear la materia
     };
 
     return (

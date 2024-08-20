@@ -3,11 +3,14 @@
 import { doCredentialLogin } from "@/app/lib/userActions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 
 const LoginForm = () => {
     const router = useRouter();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const { setUser } = useUser();
+
 
     async function onSubmit(event: { preventDefault: () => void; currentTarget: HTMLFormElement | undefined; }) {
         event.preventDefault();
@@ -22,7 +25,16 @@ const LoginForm = () => {
                 console.error(response.error);
                 setError(response.error);
             } else {
+                setUser({
+                    name: response.user.name,
+                    dni: response.user.dni,
+                    role: response.role,
+                              permissions: response.permissions,
+
+                  });
+
                 if (response.role === "admin") {
+                    console.log(response.permissions);
                     router.push("/home/admin/cursos");
                 } else if (response.role === "teacher") {
                     router.push("/teacher");

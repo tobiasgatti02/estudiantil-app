@@ -5,12 +5,15 @@ import { useSession } from 'next-auth/react';
 import { getAdminByDni, getUsersByRole } from '@/app/lib/userActions';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
 import StudentManagement from '@/app/components/ownerManagement/usuariosEstudiantes/studentManagement';
+import { useUser } from '@/app/context/UserContext';
 
 const AdminCreateUsers = () => {
-    const { data: session } = useSession(); // Obtén la sesión
-    const [activeSection, setActiveSection] = useState('Profesores');
+    const { data: session } = useSession(); 
+    const [activeSection, setActiveSection] = useState<string | null>(null);
     const [activeSubSection, setActiveSubSection] = useState('Existentes');
     const [users, setUsers] = useState<any[]>([]);
+    const { user } = useUser();
+    
     const [permissions, setPermissions] = useState({
         can_create_teachers: false,
         can_delete_teachers: false,
@@ -19,6 +22,18 @@ const AdminCreateUsers = () => {
     });
 
     useEffect(() => {
+        if (user && user.permissions) {
+            setPermissions({
+                // @ts-ignore
+                can_create_teachers: user.permissions.canCreateTeachers,
+                // @ts-ignore
+                can_delete_teachers: user.permissions.canDeleteTeachers,
+                // @ts-ignore
+                can_create_students: user.permissions.canCreateStudents,
+                // @ts-ignore
+                can_delete_students: user.permissions.canDeleteStudents
+            });
+        }
         async function fetchPermissions() {
             try {
                 if (session?.user?.dni) {
@@ -36,11 +51,23 @@ const AdminCreateUsers = () => {
         }
 
         fetchPermissions();
-    }, [session]);
+    }, [session, user]);
 
     useEffect(() => {
-        fetchUsers();
-    }, [activeSection]); 
+        if (permissions.can_create_teachers || permissions.can_delete_teachers) {
+            setActiveSection('Profesores');
+        } else if (permissions.can_create_students || permissions.can_delete_students) {
+            setActiveSection('Alumnos');
+        } else {
+            setActiveSection(null); // No tiene permisos
+        }
+    }, [permissions]);
+
+    useEffect(() => {
+        if (activeSection) {
+            fetchUsers();
+        }
+    }, [activeSection]);
 
     const fetchUsers = async () => {
         try {
@@ -53,16 +80,21 @@ const AdminCreateUsers = () => {
     };
 
     const handleSectionChange = (section: React.SetStateAction<string>) => {
-        if (section !== activeSection) { 
+        if (section !== activeSection) {
+            // @ts-ignore
             setActiveSection(section);
             setActiveSubSection('Existentes');
-            setUsers([]); 
+            setUsers([]);
         }
     };
 
     const handleSubSectionChange = (subSection: React.SetStateAction<string>) => {
         setActiveSubSection(subSection);
     };
+
+    if (activeSection === null) {
+        return <div className="p-6">No tienes permisos para gestionar usuarios.</div>;
+    }
 
     return (
         <div className="p-6">

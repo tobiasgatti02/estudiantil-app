@@ -2,35 +2,52 @@
 "use server";
 import { db } from "@vercel/postgres";
 import { signIn, signOut } from "@/auth";
+import { permission } from "process";
 
 
 export async function doLogout() {
   await signOut({ redirectTo: "/auth/login" });
 }
 
-export async function getAdminByDni(dni: string) {
-  try {
-    const query = `
-      SELECT * FROM administrators WHERE user_id = (SELECT user_id FROM usuarios WHERE dni = $1)
-    `;
-    const values = [dni];
-    const result = await db.query(query, values);
-    return result.rows[0];
-  } catch (error: any) {
-    throw new Error('Error getting admin: ' + error.message);
-  }
-}
-
 export async function getUserByDni(dni: string) {
   try {
     const query = `
-      SELECT * FROM usuarios WHERE dni = $1
+      SELECT 
+        u.*, 
+        CASE
+          WHEN u.user_type = 'admin' THEN
+            (
+              SELECT
+                json_build_object(
+                  'permissions', json_build_object(
+                    'canCreateTeachers', a.can_create_teachers,
+                    'canDeleteTeachers', a.can_delete_teachers,
+                    'canCreateStudents', a.can_create_students,
+                    'canDeleteStudents', a.can_delete_students,
+                    'canCreateCareers', a.can_create_careers,
+                    'canCreateCourses', a.can_create_courses
+                  )
+                )
+              FROM administrators a
+              WHERE a.user_id = u.user_id AND (
+                a.can_create_teachers
+                OR a.can_delete_teachers
+                OR a.can_create_students
+                OR a.can_delete_students
+                OR a.can_create_careers
+                OR a.can_create_courses
+              )
+            )
+          ELSE
+            NULL
+        END AS admin_permissions
+      FROM usuarios u
+      WHERE u.dni = $1
     `;
     const values = [dni];
     const result = await db.query(query, values);
     return result.rows;
-  }
-  catch (error: any) {
+  } catch (error: any) {
     throw new Error('Error getting user: ' + error.message);
   }
 }
@@ -222,7 +239,7 @@ export async function doCredentialLogin(formData: FormData) {
     const user = userArray[0]; 
 
    
-    return { ...response, role: user.user_type, dni: user.dni };
+    return { ...response, role: user.user_type,user:user, dni: user.dni, permissions: user.admin_permissions?.permissions };
   } catch (err) {
     throw err;
   }
@@ -231,29 +248,20 @@ export async function doCredentialLogin(formData: FormData) {
 
 
 
-export async function getAdminProps(dni:string) {
+export async function getAdminByDni(dni: string) {
   try {
     const query = `
-      SELECT can_create_teachers
-             can_delete_teachers
-             can_create_students
-             can_delete_students
-             can_create_careers
-             can_create_courses FROM 
-             administrators WHERE user_id = (SELECT 
-             user_id FROM 
-             usuarios WHERE 
-             dni = $1)
+      SELECT * FROM administrators WHERE user_id = (SELECT user_id FROM usuarios WHERE dni = $1)
     `;
     const values = [dni];
-    const result = await db.query(query, values); 
+    const result
+      = await db.query(query, values);
     return result.rows[0];
   }
   catch (error: any) {
     throw new Error('Error getting admin: ' + error.message);
   }
 }
-
 
 
 export async function updateUser(userData: { dni: string, password: string, role: string, permissions: any }) {

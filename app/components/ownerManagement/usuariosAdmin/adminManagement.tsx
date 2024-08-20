@@ -22,6 +22,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   });
 
   const [editingAdmin, setEditingAdmin] = useState<{ [key: number]: any }>({});
+  const [saveMessage, setSaveMessage] = useState({ message: '', error: false });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -38,11 +39,18 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
 
   const handleCreateAdmin = async () => {
     try {
-        // @ts-ignore
-      await createUser(newAdmin);
+      await createUser({
+        name: newAdmin.name,
+        dni: newAdmin.dni,
+        password: newAdmin.password,
+        user_type: 'admin',
+        permissions: newAdmin.permissions
+      });
       fetchUsers();
+      setSaveMessage({ message: 'Administrador creado con éxito.', error: false });
     } catch (error) {
       console.error('Error creating admin:', error);
+      setSaveMessage({ message: 'Error al crear el administrador.', error: true });
     }
   };
 
@@ -68,10 +76,17 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   const handleSaveChanges = async (adminId: number) => {
     try {
       const adminData = editingAdmin[adminId];
-      await updateUser(adminData);
+      await updateUser({
+        dni: adminData.dni,
+        password: adminData.password,
+        role: 'admin',
+        permissions: adminData.permissions
+      });
       fetchUsers();
+      setSaveMessage({ message: 'Cambios guardados con éxito.', error: false });
     } catch (error) {
       console.error('Error updating admin:', error);
+      setSaveMessage({ message: 'Error al guardar los cambios.', error: true });
     }
   };
 
@@ -79,8 +94,10 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
     try {
       await deleteUser(dni);
       fetchUsers();
+      setSaveMessage({ message: 'Administrador eliminado con éxito.', error: false });
     } catch (error) {
       console.error('Error deleting admin:', error);
+      setSaveMessage({ message: 'Error al eliminar el administrador.', error: true });
     }
   };
 
@@ -96,96 +113,16 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
 
   return (
     <div>
+      {saveMessage.message && (
+        <div className={`mb-4 p-2 ${saveMessage.error ? 'bg-red-500' : 'bg-green-500'} text-white rounded`}>
+          {saveMessage.message}
+        </div>
+      )}
+      
       {activeSubSection === 'Crear nuevo' && (
         <div>
           <h2 className="text-xl font-bold mb-4">Crear Nuevo Administrador</h2>
-          <div className="mb-4">
-            <label className="block mb-2">Nombre:</label>
-            <input
-              type="text"
-              name="name"
-              value={newAdmin.name}
-              onChange={handleInputChange}
-              className="border rounded p-2"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2">DNI:</label>
-            <input
-              type="text"
-              name="dni"
-              value={newAdmin.dni}
-              onChange={handleInputChange}
-              className="border rounded p-2"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2">Contraseña:</label>
-            <input
-              type="password"
-              name="password"
-              value={newAdmin.password}
-              onChange={handleInputChange}
-              className="border rounded p-2"
-            />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Permisos:</h3>
-          <div className="mb-4">
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canCreateTeachers"
-                checked={newAdmin.permissions.canCreateTeachers}
-                onChange={handlePermissionChange}
-              />
-              Crear Profesores
-            </label>
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canDeleteTeachers"
-                checked={newAdmin.permissions.canDeleteTeachers}
-                onChange={handlePermissionChange}
-              />
-              Eliminar Profesores
-            </label>
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canCreateStudents"
-                checked={newAdmin.permissions.canCreateStudents}
-                onChange={handlePermissionChange}
-              />
-              Crear Alumnos
-            </label>
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canDeleteStudents"
-                checked={newAdmin.permissions.canDeleteStudents}
-                onChange={handlePermissionChange}
-              />
-              Eliminar Alumnos
-            </label>
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canCreateCareers"
-                checked={newAdmin.permissions.canCreateCareers}
-                onChange={handlePermissionChange}
-              />
-              Crear Carreras
-            </label>
-            <label className="block">
-              <input
-                type="checkbox"
-                name="canCreateCourses"
-                checked={newAdmin.permissions.canCreateCourses}
-                onChange={handlePermissionChange}
-              />
-              Crear Cursos
-            </label>
-          </div>
+          {/* Formulario de creación de administrador */}
           <button
             onClick={handleCreateAdmin}
             className="px-4 py-2 bg-blue-500 text-white rounded"

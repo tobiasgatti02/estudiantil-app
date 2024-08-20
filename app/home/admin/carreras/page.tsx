@@ -5,14 +5,23 @@ import { useSession } from 'next-auth/react';
 import CarreraForm from '@/app/components/carreras/carreras';
 import { getCarreras, deleteCarrera } from '@/app/lib/adminActions';
 import { getAdminByDni } from '@/app/lib/userActions';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
 
 export default function CarrerasPage() {
   const { data: session } = useSession(); // Obtén la sesión
   const [carreras, setCarreras] = useState<any[]>([]);
   const [canCreateCareers, setCanCreateCareers] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const { user } = useUser();
+
+  
 
   useEffect(() => {
+    if (user && user.permissions) {
+      setCanCreateCareers(user.permissions.canCreateCareers);
+  }
     async function fetchCarreras() {
       try {
         const fetchedCarreras = await getCarreras();
@@ -22,7 +31,7 @@ export default function CarrerasPage() {
       }
     }
     fetchCarreras();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     async function checkPermissions() {
@@ -31,6 +40,8 @@ export default function CarrerasPage() {
           const admin = await getAdminByDni(session.user.dni);
           if (admin?.can_create_careers) {
             setCanCreateCareers(true);
+            router.refresh();
+
           }
         }
       } catch (error) {

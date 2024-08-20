@@ -36,6 +36,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
 
     const handleCreateStudent = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!canCreate) {
+            alert('No tienes privilegios para crear estudiantes.');
+            return;
+        }
         try {
             await createUser(newStudent);
             alert('Estudiante creado exitosamente');
@@ -53,6 +57,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
     };
 
     const handleDeleteStudent = async (dni: string) => {
+        if (!canDelete) {
+            alert('No tienes privilegios para eliminar estudiantes.');
+            return;
+        }
         if (window.confirm('¿Estás seguro de que quieres eliminar este estudiante?')) {
             try {
                 await deleteUser(dni);
@@ -106,7 +114,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                                 className="mb-2 p-2 w-full" 
                                 onChange={(e) => student.password = e.target.value} 
                             />
-                            { (
+                            {canDelete && (
                                 <button 
                                     onClick={() => handleDeleteStudent(student.dni)} 
                                     className="bg-red-500 text-white px-4 py-2 mr-2"
@@ -163,9 +171,14 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                             required 
                         />
                     </div>
-                    <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
-                        Crear estudiante
-                    </button>
+                    {canCreate ? (
+                        <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
+                            Crear estudiante
+                        </button>
+                    ) : (
+                        <button disabled className="bg-gray-500 text-white px-4 py-2 mt-4 cursor-not-allowed">
+                            Crear Alumno
+                        </button>                    )}
                 </form>
             )}
         </div>
