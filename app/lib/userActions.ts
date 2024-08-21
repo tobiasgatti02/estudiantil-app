@@ -9,6 +9,19 @@ export async function doLogout() {
   await signOut({ redirectTo: "/auth/login" });
 }
 
+export async function getUserByDNI(dni: string) {
+  try {
+    const query = `
+      SELECT * FROM usuarios WHERE dni = $1
+    `;
+    const values = [dni];
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (error: any) {
+    throw new Error('Error getting user: ' + error.message);
+  }
+}
+
 export async function getUserByDni(dni: string) {
   try {
     const query = `

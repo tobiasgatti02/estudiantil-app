@@ -11,7 +11,6 @@ const LoginForm = () => {
     const [loading, setLoading] = useState(false);
     const { setUser } = useUser();
 
-
     async function onSubmit(event: { preventDefault: () => void; currentTarget: HTMLFormElement | undefined; }) {
         event.preventDefault();
         setLoading(true);
@@ -29,9 +28,8 @@ const LoginForm = () => {
                     name: response.user.name,
                     dni: response.user.dni,
                     role: response.role,
-                              permissions: response.permissions,
-
-                  });
+                    permissions: response.permissions,
+                });
 
                 if (response.role === "admin") {
                     console.log(response.permissions);
@@ -52,6 +50,11 @@ const LoginForm = () => {
         }
     }
 
+    function handleDniInput(event: React.ChangeEvent<HTMLInputElement>) {
+        const value = event.target.value.replace(/\D/g, '');
+        event.target.value = value;
+    }
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -68,7 +71,7 @@ const LoginForm = () => {
                     </div>
                     <div>
                         <label htmlFor="dni" className="block text-sm font-medium text-gray-700">Dni</label>
-                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="text" name="dni" id="dni" required />
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="number" name="dni" id="dni" required onInput={handleDniInput} />
                     </div>
                     <button type="submit" className="w-full py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled={loading}>
                         {loading ? 'Logging in...' : 'Credential Login'}

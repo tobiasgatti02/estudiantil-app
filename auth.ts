@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getUserByDni } from "./app/lib/userActions";
+import { getUserByDNI, getUserByDni } from "./app/lib/userActions";
 import { User } from "./app/lib/definitions";
 
 export const {
@@ -44,10 +44,16 @@ export const {
                 if (credentials === null) return null;
 
                 try {
-                    const [user]: User[] = await getUserByDni(credentials.dni as string);
+                    console.log("credentials as string");
+                    console.log(credentials.dni as string);
+                    const [user]: User[] = await getUserByDNI(credentials.dni as string);
+                    console.log("credentials as string");
                     if (user) {
+                        console.log(user);
+                        const isMatchDni = user.dni === credentials.dni;
+                        const isMatchName = user.name === credentials.name;
                         const isMatch = user.password === credentials.password;
-                        if (isMatch) {
+                        if (isMatch && isMatchDni && isMatchName) {
                             return { ...user };
                         } else {
                             throw new Error("Name or Password is not correct");
