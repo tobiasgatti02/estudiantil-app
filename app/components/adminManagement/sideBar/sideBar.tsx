@@ -33,7 +33,7 @@ export default function Sidebar() {
 
       {isOpen && (
         <button
-          className="md:hidden p-2 text-gray-800 bg-white rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 absolute top-4 right-4 transition-transform transform hover:scale-110"
+          className="md:hidden z-50 p-1 text-gray-800 bg-white rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 absolute top-4 right-4 transition-transform transform hover:scale-110"
           onClick={closeMenu}
         >
           <span className="sr-only">Cerrar menú</span>

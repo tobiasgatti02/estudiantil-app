@@ -82,13 +82,15 @@ export default function CarrerasPage() {
       <ul className="space-y-4 mt-4">
         {carreras.map(carrera => (
           <li key={carrera.career_id} className="flex justify-between items-center bg-gray-100 p-4 rounded shadow-md">
-            <span>{carrera.name}</span>
+            <div className='md:flex text-center'>
+            <span className=' '>{carrera.name}</span>
             <button
               onClick={() => handleCarreraDeleted(carrera.career_id)}
-              className="bg-red-500 text-white px-4 py-2 rounded"
+              className="md:flex md:left-8 bg-red-500 text-white px-4 py-2 rounded"
             >
               Eliminar
             </button>
+            </div>
           </li>
         ))}
       </ul>

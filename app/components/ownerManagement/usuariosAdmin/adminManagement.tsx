@@ -46,6 +46,19 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
         user_type: 'admin',
         permissions: newAdmin.permissions
       });
+      setNewAdmin({
+        name: '',
+        dni: '',
+        password: '',
+        permissions: {
+          canCreateTeachers: false,
+          canDeleteTeachers: false,
+          canCreateStudents: false,
+          canDeleteStudents: false,
+          canCreateCareers: false,
+          canCreateCourses: false
+        }
+      })
       fetchUsers();
       setSaveMessage({ message: 'Administrador creado con éxito.', error: false });
     } catch (error) {
@@ -122,7 +135,94 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
       {activeSubSection === 'Crear nuevo' && (
         <div>
           <h2 className="text-xl font-bold mb-4">Crear Nuevo Administrador</h2>
-          {/* Formulario de creación de administrador */}
+          <div className="mb-4">
+            <label className="block mb-2">Nombre:</label>
+            <input
+              type="text"
+              name="name"
+              value={newAdmin.name}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2">DNI:</label>
+            <input
+              type="text"
+              name="dni"
+              value={newAdmin.dni}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2">Contraseña:</label>
+            <input
+              type="password"
+              name="password"
+              value={newAdmin.password}
+              onChange={handleInputChange}
+              className="border rounded p-2"
+            />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Permisos:</h3>
+          <div className="mb-4">
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateTeachers"
+                checked={newAdmin.permissions.canCreateTeachers}
+                onChange={handlePermissionChange}
+              />
+              Crear Profesores
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canDeleteTeachers"
+                checked={newAdmin.permissions.canDeleteTeachers}
+                onChange={handlePermissionChange}
+              />
+              Eliminar Profesores
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateStudents"
+                checked={newAdmin.permissions.canCreateStudents}
+                onChange={handlePermissionChange}
+              />
+              Crear Alumnos
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canDeleteStudents"
+                checked={newAdmin.permissions.canDeleteStudents}
+                onChange={handlePermissionChange}
+              />
+              Eliminar Alumnos
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateCareers"
+                checked={newAdmin.permissions.canCreateCareers}
+                onChange={handlePermissionChange}
+              />
+              Crear Carreras
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                name="canCreateCourses"
+                checked={newAdmin.permissions.canCreateCourses}
+                onChange={handlePermissionChange}
+              />
+              Crear Cursos
+            </label>
+          </div>
+
           <button
             onClick={handleCreateAdmin}
             className="px-4 py-2 bg-blue-500 text-white rounded"
