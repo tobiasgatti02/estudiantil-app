@@ -143,6 +143,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               value={newAdmin.name}
               onChange={handleInputChange}
               className="border rounded p-2"
+              required
             />
           </div>
           <div className="mb-4">
@@ -153,6 +154,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               value={newAdmin.dni}
               onChange={handleInputChange}
               className="border rounded p-2"
+              required
             />
           </div>
           <div className="mb-4">
@@ -163,6 +165,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               value={newAdmin.password}
               onChange={handleInputChange}
               className="border rounded p-2"
+              required
             />
           </div>
           <h3 className="text-lg font-semibold mb-2">Permisos:</h3>
