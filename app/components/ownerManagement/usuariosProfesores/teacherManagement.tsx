@@ -127,7 +127,7 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                     <div className="mb-2">
                         <label htmlFor="name" className="block">Nombre:</label>
                         <input 
-                            type="number" 
+                            type="text" 
                             id="name" 
                             name="name" 
                             value={newTeacher.name} 
@@ -139,7 +139,7 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                     <div className="mb-2">
                         <label htmlFor="dni" className="block">DNI:</label>
                         <input 
-                            type="text" 
+                            type="number" 
                             id="dni" 
                             name="dni" 
                             value={newTeacher.dni} 

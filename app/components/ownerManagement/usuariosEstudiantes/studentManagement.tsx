@@ -47,7 +47,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
             setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
             return;
           }
-        if (!canCreate) {
+        if (!canCreate && user?.role !== 'owner') {
             alert('No tienes privilegios para crear estudiantes.');
             return;
         }
@@ -68,7 +68,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
     };
 
     const handleDeleteStudent = async (dni: string) => {
-        if (!canDelete) {
+        if (!canDelete && user?.role !== 'owner') {
             alert('No tienes privilegios para eliminar estudiantes.');
             return;
         }
