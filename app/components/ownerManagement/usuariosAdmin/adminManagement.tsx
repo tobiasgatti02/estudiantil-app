@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { getUsersByRole, updateUser, createUser, deleteUser } from '@/app/lib/userActions';
 import { useState } from 'react';
 
@@ -38,23 +38,20 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   };
 
   const handleCreateAdmin = async () => {
-    const { name, dni, password } = newAdmin;
-
-    if (!name || !dni || !password) {
+    if (!newAdmin.name || !newAdmin.password || !newAdmin.dni) {
       setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
       return;
     }
 
-    if (parseInt(dni) <= 0) {
-      setSaveMessage({ message: 'El DNI debe ser un número positivo.', error: true });
+    if (parseInt(newAdmin.dni) < 0) {
+      setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
       return;
     }
-
     try {
       await createUser({
-        name,
-        dni,
-        password,
+        name: newAdmin.name,
+        dni: newAdmin.dni,
+        password: newAdmin.password,
         user_type: 'admin',
         permissions: newAdmin.permissions
       });
@@ -70,7 +67,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
           canCreateCareers: false,
           canCreateCourses: false
         }
-      });
+      })
       fetchUsers();
       setSaveMessage({ message: 'Administrador creado con éxito.', error: false });
     } catch (error) {
@@ -99,23 +96,11 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   };
 
   const handleSaveChanges = async (adminId: number) => {
-    const adminData = editingAdmin[adminId];
-    const { name, dni, password } = adminData;
-
-    if (!name || !dni || !password) {
-      setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
-      return;
-    }
-
-    if (parseInt(dni) <= 0) {
-      setSaveMessage({ message: 'El DNI debe ser un número positivo.', error: true });
-      return;
-    }
-
     try {
+      const adminData = editingAdmin[adminId];
       await updateUser({
-        dni,
-        password,
+        dni: adminData.dni,
+        password: adminData.password,
         role: 'admin',
         permissions: adminData.permissions
       });
@@ -178,7 +163,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               value={newAdmin.dni}
               onChange={handleInputChange}
               className="border rounded p-2"
-              required
+              
             />
           </div>
           <div className="mb-4">
@@ -189,7 +174,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               value={newAdmin.password}
               onChange={handleInputChange}
               className="border rounded p-2"
-              required
+              
             />
           </div>
           <h3 className="text-lg font-semibold mb-2">Permisos:</h3>
@@ -280,36 +265,89 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
                     <td className="border border-gray-300 p-2">{user.dni}</td>
                     <td className="border border-gray-300 p-2">
                       <input
-                        type="password"
+                        type="text"
+                        value={editingAdmin?.[user.user_id]?.password || ''}
+                        onChange={(e) => handleEditChange(e, user.user_id)}
                         name="password"
-                        value={editingAdmin[user.user_id]?.password || user.password}
-                        onChange={e => handleEditChange(e, user.user_id)}
-                        className="border rounded p-2 w-full"
+                        className="border rounded p-2"
                       />
                     </td>
                     <td className="border border-gray-300 p-2">
-                      {Object.keys(newAdmin.permissions).map(permission => (
-                        <label key={permission} className="block">
-                          <input
-                            type="checkbox"
-                            name={permission}
-                            checked={editingAdmin[user.user_id]?.permissions?.[permission] || user.permissions?.[permission]}
-                            onChange={e => handleEditPermissionsChange(e, user.user_id)}
-                          />
-                          {permission.replace(/can([A-Z])/g, (match, p1) => ` ${p1.toLowerCase()}`)}
-                        </label>
-                      ))}
+                      {editingAdmin[user.user_id] && (
+                        <div>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateTeachers"
+                              checked={editingAdmin[user.user_id].permissions.canCreateTeachers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Profesores
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canDeleteTeachers"
+                              checked={editingAdmin[user.user_id].permissions.canDeleteTeachers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Eliminar Profesores
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateStudents"
+                              checked={editingAdmin[user.user_id].permissions.canCreateStudents}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Alumnos
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canDeleteStudents"
+                              checked={editingAdmin[user.user_id].permissions.canDeleteStudents}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Eliminar Alumnos
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateCareers"
+                              checked={editingAdmin[user.user_id].permissions.canCreateCareers}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Carreras
+                          </label>
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              name="canCreateCourses"
+                              checked={editingAdmin[user.user_id].permissions.canCreateCourses}
+                              onChange={(e) => handleEditPermissionsChange(e, user.user_id)}
+                            />
+                            Crear Cursos
+                          </label>
+                        </div>
+                      )}
                     </td>
                     <td className="border border-gray-300 p-2">
                       <button
                         onClick={() => handleSaveChanges(user.user_id)}
-                        className="px-4 py-2 bg-green-500 text-white rounded mr-2"
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
                       >
                         Guardar
                       </button>
                       <button
+                        onClick={() => startEditing(user)}
+                        className="px-4 py-2 bg-green-500 text-white rounded ml-2"
+                      >
+                        Editar
+                      </button>
+                      <button
                         onClick={() => handleDeleteAdmin(user.dni)}
-                        className="px-4 py-2 bg-red-500 text-white rounded"
+                        className="px-4 py-2 bg-red-500 text-white rounded ml-2"
                       >
                         Eliminar
                       </button>

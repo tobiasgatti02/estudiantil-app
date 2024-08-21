@@ -31,6 +31,8 @@ const LoginForm = () => {
                     permissions: response.permissions,
                 });
 
+                console.log(response.role);
+
                 if (response.role === "admin") {
                     console.log(response.permissions);
                     router.push("/home/admin/cursos");

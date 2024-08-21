@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
+import { useUser } from '@/app/context/UserContext';
 
 interface Teacher {
     teacher_id?: number;
@@ -7,7 +8,6 @@ interface Teacher {
     dni: string;
     password: string;
 }
-
 interface TeacherManagementProps {
     users: Teacher[];
     activeSubSection: string;
@@ -23,6 +23,8 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
         password: '',
         user_type: 'teacher'
     });
+    const { user } = useUser();
+    const [saveMessage, setSaveMessage] = useState({ message: '', error: false });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -34,6 +36,15 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
 
     const handleCreateTeacher = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!newTeacher.name || !newTeacher.password || !newTeacher.dni) {
+            setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
+            return;
+          }
+      
+          if (parseInt(newTeacher.dni) < 0) {
+            setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
+            return;
+          }
         try {
             await createUser(newTeacher);
             alert('Profesor creado exitosamente');
@@ -64,7 +75,8 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
     };
 
     const handleSaveChanges = async (teacher: Teacher) => {
-        try {// @ts-ignore
+        try {
+            // @ts-ignore
             await updateUser(teacher);
             alert('Cambios guardados exitosamente');
             fetchUsers();
@@ -76,6 +88,11 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
 
     return (
         <div>
+            {saveMessage.message && (
+        <div className={`mb-4 p-2 ${saveMessage.error ? 'bg-red-500' : 'bg-green-500'} text-white rounded`}>
+          {saveMessage.message}
+        </div>
+      )}
             {activeSubSection === 'Existentes' && (
                 <div>
                     {users.map((teacher) => (
@@ -88,7 +105,7 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                                 className="mb-2 p-2 w-full" 
                                 onChange={(e) => teacher.password = e.target.value} 
                             />
-                            {canDelete ? (
+                            {(canDelete || user?.role === 'owner') ?  (
                                 <button onClick={() => handleDeleteTeacher(teacher.dni)} className="bg-red-500 text-white px-4 py-2 mr-2">
                                     Eliminar profesor
                                 </button>
@@ -110,7 +127,7 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                     <div className="mb-2">
                         <label htmlFor="name" className="block">Nombre:</label>
                         <input 
-                            type="text" 
+                            type="number" 
                             id="name" 
                             name="name" 
                             value={newTeacher.name} 
@@ -143,7 +160,7 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                             required 
                         />
                     </div>
-                    {canCreate ? (
+                    {(canCreate || user?.role === 'owner') ? (
                         <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
                             Crear profesor
                         </button>

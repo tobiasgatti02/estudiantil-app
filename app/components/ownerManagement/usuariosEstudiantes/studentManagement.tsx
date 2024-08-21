@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createUser, updateUser, deleteUser } from '@/app/lib/userActions';
-
+import { useUser } from '@/app/context/UserContext';
 interface Student {
     student_id: number;
     name: string;
@@ -25,6 +25,8 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
         password: '',
         user_type: 'student'
     });
+    const { user } = useUser();
+    const [saveMessage, setSaveMessage] = useState({ message: '', error: false });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -36,6 +38,15 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
 
     const handleCreateStudent = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!newStudent.name || !newStudent.password || !newStudent.dni) {
+            setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
+            return;
+          }
+      
+          if (parseInt(newStudent.dni) < 0) {
+            setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
+            return;
+          }
         if (!canCreate) {
             alert('No tienes privilegios para crear estudiantes.');
             return;
@@ -92,6 +103,11 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
 
     return (
         <div>
+              {saveMessage.message && (
+        <div className={`mb-4 p-2 ${saveMessage.error ? 'bg-red-500' : 'bg-green-500'} text-white rounded`}>
+          {saveMessage.message}
+        </div>
+      )}
             {activeSubSection === 'Existentes' && (
                 <div>
                     {users.map((student) => (
@@ -114,14 +130,19 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                                 className="mb-2 p-2 w-full" 
                                 onChange={(e) => student.password = e.target.value} 
                             />
-                            {canDelete && (
+                            {(canDelete || user?.role === 'owner') ?  (
                                 <button 
                                     onClick={() => handleDeleteStudent(student.dni)} 
                                     className="bg-red-500 text-white px-4 py-2 mr-2"
                                 >
                                     Eliminar estudiante
                                 </button>
-                            )}
+                            ) : (
+                              
+                                    <button disabled className="bg-gray-500 text-white px-4 py-2 mr-2 cursor-not-allowed">
+                                        Eliminar estudiante
+                                    </button>
+                                )}
                             <button 
                                 onClick={() => handleSaveChanges(student)} 
                                 className="bg-green-500 text-white px-4 py-2"
@@ -150,7 +171,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                     <div className="mb-2">
                         <label htmlFor="dni" className="block">DNI:</label>
                         <input 
-                            type="text" 
+                            type="number" 
                             id="dni" 
                             name="dni" 
                             value={newStudent.dni} 
@@ -171,14 +192,15 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                             required 
                         />
                     </div>
-                    {canCreate ? (
+                    {(canCreate || user?.role === 'owner')?(
                         <button type="submit" className="bg-green-500 text-white px-4 py-2 mt-4">
                             Crear estudiante
                         </button>
                     ) : (
                         <button disabled className="bg-gray-500 text-white px-4 py-2 mt-4 cursor-not-allowed">
-                            Crear Alumno
-                        </button>                    )}
+                            Crear Estudiante
+                        </button>                    
+                    )}
                 </form>
             )}
         </div>
