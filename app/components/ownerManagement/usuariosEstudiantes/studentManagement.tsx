@@ -70,7 +70,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
     };
 
     const handleDeleteStudent = async (dni: string) => {
-        if (!canDelete && user?.role !== 'owner') {
+        if (!canDelete && session?.user.user_type!=='owner' && user?.role !== 'owner') {
             alert('No tienes privilegios para eliminar estudiantes.');
             return;
         }
