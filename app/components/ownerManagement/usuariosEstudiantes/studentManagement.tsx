@@ -49,7 +49,7 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
             setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
             return;
           }
-        if (!canCreate && user?.role !== 'owner') {
+        if (!canCreate && session?.user.user_type!=='owner'&& user?.role !== 'owner') {
             alert('No tienes privilegios para crear estudiantes.');
             return;
         }
