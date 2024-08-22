@@ -27,6 +27,7 @@ export default function MisMateriasPage() {
           const data = await getTeacherSubjectsDetails(session.user.dni);
           setMaterias(data);
         } catch (err) {
+          //@ts-ignore
           setError("Error al obtener las materias: " + err.message);
         }
       };

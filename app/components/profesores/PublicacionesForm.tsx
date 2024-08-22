@@ -17,18 +17,19 @@ export default function PublicacionesForm() {
     
     const [error, setError] = useState(false);
     const params = useParams();
+    // @ts-ignore
     const { materiaId } = params.id;
     const { titulo, contenido} = publicacion;
     const { file_name, file_path } = archivo;
     
-    const handleChange = (e) => {
+    const handleChange = (e: { target: { name: any; value: any; }; }) => {
         setPublicacion({
         ...publicacion,
         [e.target.name]: e.target.value,
         });
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
     
         if (
