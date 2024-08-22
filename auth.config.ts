@@ -21,7 +21,7 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
       const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
-      const isOnTeacher = nextUrl.pathname.startsWith('/home/teacher');
+      const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor/materias');
       const isOnStudent = nextUrl.pathname.startsWith('/home/student');
       const baseUrl = process.env.NEXTAUTH_URL;
 
@@ -38,8 +38,8 @@ export const authConfig: NextAuthConfig = {
             }
             return true;
           case 'teacher':
-            if (isOnOwner || isOnAdmin) {
-              return NextResponse.redirect(baseUrl + '/home/teacher');
+            if ( !isOnTeacher) {
+              return NextResponse.redirect(baseUrl + '/home/profesor/materias');
             }
             return true;
           case 'student':
