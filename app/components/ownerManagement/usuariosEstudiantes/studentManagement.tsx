@@ -87,6 +87,10 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
     };
 
     const handleSaveChanges = async (student: Student) => {
+        if (!student.name || !student.password || !student.dni) {
+            setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
+            return;
+          }
         try {
             await updateUser({
                 ...student,

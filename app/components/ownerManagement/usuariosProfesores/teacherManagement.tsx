@@ -77,6 +77,10 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
     };
 
     const handleSaveChanges = async (teacher: Teacher) => {
+        if (!teacher.name || !teacher.password || !teacher.dni) {
+            setSaveMessage({ message: 'Todos los campos son obligatorios.', error: true });
+            return;
+        }
         try {
             // @ts-ignore
             await updateUser(teacher);

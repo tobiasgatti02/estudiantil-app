@@ -23,6 +23,8 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
 
   const [editingAdmin, setEditingAdmin] = useState<{ [key: number]: any }>({});
   const [saveMessage, setSaveMessage] = useState({ message: '', error: false });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -96,7 +98,13 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   };
 
   const handleSaveChanges = async (adminId: number) => {
+    if (!editingAdmin[adminId].password) {
+      setSaveMessage({ message: 'La contraseña no puede estar vacía.', error: true });
+      return
+    }
+    
     try {
+      
       const adminData = editingAdmin[adminId];
       await updateUser({
         dni: adminData.dni,
@@ -105,6 +113,8 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
         permissions: adminData.permissions
       });
       fetchUsers();
+      setEditingUserId(null);
+      setIsEditing(false);
       setSaveMessage({ message: 'Cambios guardados con éxito.', error: false });
     } catch (error) {
       console.error('Error updating admin:', error);
@@ -124,6 +134,8 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   };
 
   const startEditing = (user: any) => {
+    setEditingUserId(user.user_id);
+    setIsEditing(true);
     setEditingAdmin(prev => ({
       ...prev,
       [user.user_id]: {
@@ -266,6 +278,7 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
                     <td className="border border-gray-300 p-2">
                       <input
                         type="text"
+                        disabled={editingUserId !== user.user_id}
                         value={editingAdmin?.[user.user_id]?.password || ''}
                         onChange={(e) => handleEditChange(e, user.user_id)}
                         name="password"
