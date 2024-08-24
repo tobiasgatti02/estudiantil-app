@@ -14,19 +14,11 @@ export default function Home() {
               Iniciar Sesión
           </Link>
 
-          <Link href="/auth/register"  className="block bg-[#5cb85c] text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out hover:bg-[#4cae4c] focus:outline-none focus:ring-2 focus:ring-[#4cae4c]">
-            
-              Crear Cuenta
           
-          </Link>
         </div>
 
-        <p className="text-gray-500 text-sm mt-6">
-          ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-[#4a90e2] hover:underline">
-            Crea una ahora
-          </Link>
-        </p>
+       
+      
       </div>
     </div>
   );
