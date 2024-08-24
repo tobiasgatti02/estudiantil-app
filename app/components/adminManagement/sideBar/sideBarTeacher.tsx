@@ -54,7 +54,7 @@ export default function SidebarTeacher() {
               </Link>
             </li>
           ))}
-          <li>
+          <li className='block px-4 py-2 text-lg font-medium hover:bg-gray-700 hover:rounded-md transition-colors duration-200'>
             <Logout />
           </li>
         </ul>

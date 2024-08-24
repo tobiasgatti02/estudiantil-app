@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
-
+import { useUser } from '@/app/context/UserContext';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
   const [materias, setMaterias] = useState<any[]>([]);
   const [error, setError] = useState("");
-    const router = useRouter();
+  const router = useRouter();
+  const { user } = useUser();
+
 
   useEffect(() => {
     if (status === "loading") return; // Don't do anything while loading
@@ -19,11 +21,13 @@ export default function MisMateriasPage() {
       return;
     }
     
-    if (session.user?.dni) {
+    if (session.user?.dni || user?.dni) {
       const fetchMaterias = async () => {
         try {
-          const data = await getTeacherSubjectsDetails(session.user.dni);
+          const dni = session.user?.dni ?? user?.dni ?? '';
+          const data = await getTeacherSubjectsDetails(dni);
           setMaterias(data);
+          
         } catch (err) {
           //@ts-ignore
           setError("Error al obtener las materias: " + err.message);
