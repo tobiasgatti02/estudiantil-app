@@ -16,48 +16,29 @@ export default function MisMateriasPage() {
 
 
   useEffect(() => {
-    if (status === "loading") return; 
-    useEffect(() => {
-      const checkUserExists = async () => {
-          if (session?.user?.dni) {
-              try {
-                  const admin = await getAdminByDni(session.user.dni);
-                  if (!admin) {
-                      // User doesn't exist anymore, sign out
-                      await signOut({ redirect: true, callbackUrl: '/auth/login' });
-                  }
-              } catch (error) {
-                  console.error('Error checking user existence:', error);
-              }
-          }
-      };
+    if (status === "loading") return; // Don't do anything while loading
 
-      // Check immediately and then every 90 seconds
-      checkUserExists();
-      const intervalId = setInterval(checkUserExists, 90000);
-
-      // Clear interval on component unmount
-      return () => clearInterval(intervalId);
-  }, [session]);
-    
-    if (session?.user?.dni || user?.dni) {
-      const fetchMaterias = async () => {
+    const checkUserExists = async () => {
+      if (session?.user?.dni) {
         try {
-          const dni = session?.user?.dni ?? user?.dni ?? '';
-          const data = await getTeacherSubjectsDetails(dni);
-          setMaterias(data);
-          
-        } catch (err) {
-          //@ts-ignore
-          setError("Error al obtener las materias: " + err.message);
+          const admin = await getAdminByDni(session.user.dni);
+          if (!admin) {
+            // User doesn't exist anymore, sign out
+            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+          }
+        } catch (error) {
+          console.error('Error checking user existence:', error);
         }
-      };
-      
-      fetchMaterias();
-    } else {
-      setError("No se pudo obtener el DNI del usuario");
-    }
-  }, [session, status]); // Dependencias actualizadas para verificar el estado de sesión
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);// Dependencias actualizadas para verificar el estado de sesión
 
     function handleMateriaClick(subject_id: any): void {
         router.push(`/home/profesor/materias/materia/${subject_id}`);
