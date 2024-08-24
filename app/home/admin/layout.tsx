@@ -1,5 +1,4 @@
 import Sidebar from "@/app/components/adminManagement/sideBar/sideBar";
-import {Sesion} from "@/app/components/sesion";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
