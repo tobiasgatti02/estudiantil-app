@@ -5,10 +5,10 @@ import { getCourseByDetails, createCourse, getCarreras } from '@/app/lib/adminAc
 import { useRouter } from 'next/navigation';
 
 export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated: () => void }) {
-  const [career, setCareer] = useState<string | undefined>('Default Career');
-  const [year, setYear] = useState<string | undefined>('2023');
-  const [careerYear, setCareerYear] = useState<string | undefined>('Primer año');
-  const [division, setDivision] = useState<string | undefined>('División A');
+  const [career, setCareer] = useState<string>('');
+  const [year, setYear] = useState<string>('2023');
+  const [careerYear, setCareerYear] = useState<string>('Primer año');
+  const [division, setDivision] = useState<string>('División A');
   const [carreraOptions, setCarreraOptions] = useState<string[]>([]);
   const router = useRouter();
 
@@ -17,7 +17,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
       try {
         const fetchedCarreras = await getCarreras();
         setCarreraOptions(fetchedCarreras.map(carrera => carrera.name));
-        if (fetchedCarreras.length === 1) {
+        if (fetchedCarreras.length > 0) {
           setCareer(fetchedCarreras[0].name);
         }
       } catch (error) {
@@ -70,7 +70,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
 
       await createCourse(career, parseInt(year), mappedCareerYear, mappedDivision);
       onCourseCreated();
-      setCareer('Default Career');
+      // Reset form fields to default values
       setYear('2023');
       setCareerYear('Primer año');
       setDivision('División A');
@@ -88,6 +88,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
           value={career}
           onChange={(e) => setCareer(e.target.value)}
           className="w-full px-3 py-2 border rounded"
+          required
         >
           <option value="" disabled>Select a career</option>
           {carreraOptions.map(carrera => (
@@ -102,6 +103,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
           value={year}
           onChange={(e) => setYear(e.target.value)}
           className="w-full px-3 py-2 border rounded"
+          required
         >
           <option value="" disabled>Select a year</option>
           {Array.from({ length: 43 }, (_, i) => 1998 + i).map(year => (
@@ -116,6 +118,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
           value={careerYear}
           onChange={(e) => setCareerYear(e.target.value)}
           className="w-full px-3 py-2 border rounded"
+          required
         >
           <option value="" disabled>Select career year</option>
           {['Primer año', 'Segundo año', 'Tercer año', 'Cuarto año', 'Quinto año', 'Sexto año'].map(year => (
@@ -130,6 +133,7 @@ export default function CreateCourseForm({ onCourseCreated }: { onCourseCreated:
           value={division}
           onChange={(e) => setDivision(e.target.value)}
           className="w-full px-3 py-2 border rounded"
+          required
         >
           <option value="" disabled>Select division</option>
           {['División A', 'División B', 'División C', 'División D', 'División E', 'División F', 'División G'].map(division => (

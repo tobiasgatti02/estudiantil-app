@@ -1,11 +1,10 @@
 "use client"
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import CreateCourseForm from '@/app/components/adminManagement/formCurso/createCourseForm';
 import ClientCourseList from '@/app/components/adminManagement/listaCurso/courseList';
 
 export default function Page() {
-
 
  
 

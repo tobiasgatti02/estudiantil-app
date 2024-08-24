@@ -28,6 +28,20 @@ export async function createCarrera(nombre: string) {
 export async function deleteCarrera(careerId: number) {
   try {
     await db.query('BEGIN');
+    
+    const deleteFilesQuery = `
+      DELETE FROM files
+      WHERE publication_id IN (SELECT publication_id FROM publications WHERE subject_id IN (SELECT subject_id FROM subjects WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1)))
+    `;
+
+    await db.query(deleteFilesQuery, [careerId]);
+
+    const deletePublicationsQuery = `
+      DELETE FROM publications
+      WHERE subject_id IN (SELECT subject_id FROM subjects WHERE course_id IN (SELECT course_id FROM courses WHERE career_id = $1))
+    `;
+    await db.query(deletePublicationsQuery, [careerId]);
+
 
     const deleteSubjectScheduleQuery = `
       DELETE FROM subject_schedules
@@ -59,8 +73,7 @@ export async function deleteCarrera(careerId: number) {
     
 
     // Eliminar los cursos asociados a la carrera
-    const deleteCoursesQuery = 'DELETE FROM courses WHERE career_id = $1';
-    await db.query(deleteCoursesQuery, [careerId]);
+    
 
     // Eliminar la carrera
     const deleteCareerQuery = 'DELETE FROM careers WHERE career_id = $1';
@@ -81,7 +94,7 @@ export async function getCourses() {
     const query = `
       SELECT c.course_id, ca.name AS career_name, c.year, c.career_year, c.division
       FROM courses c
-      JOIN careers ca ON c.career_id = ca.career_id
+      LEFT JOIN careers ca ON c.career_id = ca.career_id
       ORDER BY ca.name, c.year, c.career_year, c.division
     `;
     const result = await db.query(query);
@@ -90,6 +103,7 @@ export async function getCourses() {
     throw new Error('Error fetching courses: ' + error.message);
   }
 }
+
 
 export async function createCourse(careerName: string, year: number, careerYear: number, division: string) {
   try {

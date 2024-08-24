@@ -87,7 +87,6 @@ export default function PublicacionesForm() {
     console.log('Creating publication:', publicacion);
     console.log('Files:', archivos);
     console.log('Materia:', materiaId);
-    console.log('Profesor:',profesorID.teacher_id); ;
     
 
 
@@ -101,6 +100,7 @@ export default function PublicacionesForm() {
 
       const publicationId = await createPublication(
         Number(materiaId),
+        // @ts-ignore
         Number(profesorID.teacher_id),
         publicacion.titulo,
         publicacion.contenido
@@ -122,6 +122,7 @@ export default function PublicacionesForm() {
   };
   const handleDelete = async (publicationId: number) => {
     try {
+      // @ts-ignore
       const deleted = await deletePublication(publicationId, Number(profesorID?.teacher_id));
       if (deleted) {
         loadPublications();

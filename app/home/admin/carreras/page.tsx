@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import CarreraForm from '@/app/components/carreras/carreras';
 import { getCarreras, deleteCarrera } from '@/app/lib/adminActions';
 import { getAdminByDni } from '@/app/lib/userActions';
@@ -16,9 +16,31 @@ export default function CarrerasPage() {
   const router = useRouter();
   const { user } = useUser();
 
-  
+  useEffect(() => {
+    const checkUserExists = async () => {
+        if (session?.user?.dni) {
+            try {
+                const admin = await getAdminByDni(session.user.dni);
+                if (!admin) {
+                    // User doesn't exist anymore, sign out
+                    await signOut({ redirect: true, callbackUrl: '/login' });
+                }
+            } catch (error) {
+                console.error('Error checking user existence:', error);
+            }
+        }
+    };
+
+    // Check immediately and then every 30 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 30000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+}, [session]);
 
   useEffect(() => {
+    
     if (user && user.permissions) {
       // @ts-ignore
       setCanCreateCareers(user.permissions.canCreateCareers);
@@ -80,7 +102,7 @@ export default function CarrerasPage() {
       )}
       {error && <p className="text-red-500 mt-2">{error}</p>}
       <ul className="space-y-4 mt-4">
-        {carreras.map(carrera => (
+        {canCreateCareers && carreras.map(carrera => (
           <li key={carrera.career_id} className="flex justify-between items-center bg-gray-100 p-4 rounded shadow-md">
             <div className='md:flex text-center'>
             <span className=' '>{carrera.name}</span>
@@ -93,6 +115,7 @@ export default function CarrerasPage() {
             </div>
           </li>
         ))}
+        
       </ul>
     </div>
   );

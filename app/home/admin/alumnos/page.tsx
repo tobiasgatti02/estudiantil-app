@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { getAdminByDni, getUsersByRole } from '@/app/lib/userActions';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
 import StudentManagement from '@/app/components/ownerManagement/usuariosEstudiantes/studentManagement';
@@ -22,6 +22,7 @@ const AdminCreateUsers = () => {
     });
 
     useEffect(() => {
+        
         if (user && user.permissions) {
             setPermissions({
                 // @ts-ignore
@@ -38,6 +39,7 @@ const AdminCreateUsers = () => {
             try {
                 if (session?.user?.dni) {
                     const admin = await getAdminByDni(session.user.dni);
+                   
                     setPermissions({
                         can_create_teachers: admin?.can_create_teachers || false,
                         can_delete_teachers: admin?.can_delete_teachers || false,
@@ -68,6 +70,29 @@ const AdminCreateUsers = () => {
             fetchUsers();
         }
     }, [activeSection]);
+
+    useEffect(() => {
+        const checkUserExists = async () => {
+            if (session?.user?.dni) {
+                try {
+                    const admin = await getAdminByDni(session.user.dni);
+                    if (!admin) {
+                        // User doesn't exist anymore, sign out
+                        await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                    }
+                } catch (error) {
+                    console.error('Error checking user existence:', error);
+                }
+            }
+        };
+
+        // Check immediately and then every 90 seconds
+        checkUserExists();
+        const intervalId = setInterval(checkUserExists, 90000);
+
+        // Clear interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [session]);
 
     const fetchUsers = async () => {
         try {

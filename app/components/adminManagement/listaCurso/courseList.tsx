@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { getCourses } from '@/app/lib/adminActions';
 import { getAdminByDni } from '@/app/lib/userActions';
 import Link from 'next/link';
@@ -23,13 +23,13 @@ export default function ClientCourseList() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [canCreateCourses, setCanCreateCourses] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchCourses() {
       if (user && user.permissions) {
         // @ts-ignore
         setCanCreateCourses(user.permissions.canCreateCourses);
+        console.log(user);
     }
       try {
         const fetchedCourses = await getCourses();
@@ -49,6 +49,7 @@ export default function ClientCourseList() {
     async function checkPermissions() {
       try {
         if (session?.user?.dni) {
+          console.log(user);
           const admin = await getAdminByDni(session.user.dni);
           if (admin?.can_create_courses) {
             setCanCreateCourses(true);
@@ -62,6 +63,30 @@ export default function ClientCourseList() {
     }
     checkPermissions();
   }, [session]);
+
+
+  useEffect(() => {
+    const checkUserExists = async () => {
+        if (session?.user?.dni) {
+            try {
+                const admin = await getAdminByDni(session.user.dni);
+                if (!admin) {
+                    // User doesn't exist anymore, sign out
+                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                }
+            } catch (error) {
+                console.error('Error checking user existence:', error);
+            }
+        }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+}, [session]);
 
   const handleCourseCreated = async () => {
     setIsLoading(true);
@@ -81,14 +106,18 @@ export default function ClientCourseList() {
 
   return (
     <div className="mt-4">
-      <h2 className="text-xl font-semibold mb-2">Cursos existentes</h2>
+      <h2 className="text-xl font-semibold mb-2">Crear Curso</h2>
       {canCreateCourses && (
         <CreateCourseForm onCourseCreated={handleCourseCreated} />
       )}
+      <h2 className="text-xl font-semibold mt-8mb-2">Cursos Existentes</h2>
       <ul className="space-y-2 mt-4">
+
         {courses.map((course) => (
           <li key={course.course_id} className="bg-white p-4 rounded shadow">
-            <span>{course.career_name} - {course.year} - {course.career_year}º año - División {course.division}</span>
+            <span>{course.career_name ? 
+            course.career_name : "sin carrera"} - {course.year} - {course.career_year}º año - División {course.division}
+            </span>
             <Link href={`/home/admin/cursos/curso/${course.course_id}`} className="ml-4 text-blue-500 hover:underline">
               Ver curso
             </Link>

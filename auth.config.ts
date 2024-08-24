@@ -4,6 +4,8 @@ import { JWT } from 'next-auth/jwt';
 import { db } from '@vercel/postgres';
 
 export const authConfig: NextAuthConfig = {
+
+  
   pages: {
     signIn: '/auth/login',
   },
@@ -18,12 +20,14 @@ export const authConfig: NextAuthConfig = {
       return baseUrl;
     },
     async authorized({ auth, request: { nextUrl } }) {
+      
       const isLoggedIn = !!auth?.user;
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
       const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
       const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor/materias');
       const isOnStudent = nextUrl.pathname.startsWith('/home/student');
       const baseUrl = process.env.NEXTAUTH_URL;
+      
 
       if (isLoggedIn) {
         switch (auth.user?.role) {

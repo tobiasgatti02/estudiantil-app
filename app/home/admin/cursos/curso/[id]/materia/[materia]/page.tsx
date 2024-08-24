@@ -1,15 +1,39 @@
 "use client";
-import { Suspense } from 'react';
+import { Suspense, useDebugValue, useEffect } from 'react';
 import Link from 'next/link';
 import SubjectDetails from '@/app/components/materias/detallesMaterias';
 import SubjectSchedule from '@/app/components/materias/horariosMaterias';
 import { useParams } from 'next/navigation';
-
+import { signOut, useSession } from 'next-auth/react';
+import { getAdminByDni } from '@/app/lib/userActions';
 
 export default function SubjectPage() {
   const params = useParams();
   const courseId = Number(params.id);
   const subjectId = Number(params.materia);
+  const { data: session } = useSession();
+  useEffect(() => {
+    const checkUserExists = async () => {
+        if (session?.user?.dni) {
+            try {
+                const admin = await getAdminByDni(session.user.dni);
+                if (!admin) {
+                    // User doesn't exist anymore, sign out
+                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                }
+            } catch (error) {
+                console.error('Error checking user existence:', error);
+            }
+        }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+}, [session]);
 
 
 

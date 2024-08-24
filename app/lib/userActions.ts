@@ -353,11 +353,32 @@ export async function deleteUser(dni: string) {
         deleteTypeQuery = 'DELETE FROM administrators WHERE user_id = $1';
         break;
       case 'teacher':
-        // Primero, elimina las asociaciones con materias
-        const deleteTeacherSubjectsQuery = `
-          DELETE FROM teacher_subjects WHERE teacher_id = (SELECT teacher_id FROM teachers WHERE user_id = $1)
+        // Primero, obtén el teacher_id
+        const getTeacherIdQuery = 'SELECT teacher_id FROM teachers WHERE user_id = $1';
+        const teacherResult = await db.query(getTeacherIdQuery, [user_id]);
+        if (teacherResult.rowCount === 0) {
+          throw new Error('Teacher not found');
+        }
+        const teacherId = teacherResult.rows[0].teacher_id;
+
+        // Elimina los archivos asociados a las publicaciones del profesor
+        const deleteFilesQuery = `
+          DELETE FROM files
+          WHERE publication_id IN (
+            SELECT publication_id
+            FROM publications
+            WHERE teacher_id = $1
+          )
         `;
-        await db.query(deleteTeacherSubjectsQuery, [user_id]);
+        await db.query(deleteFilesQuery, [teacherId]);
+
+        // Elimina las publicaciones del profesor
+        const deletePublicationsQuery = 'DELETE FROM publications WHERE teacher_id = $1';
+        await db.query(deletePublicationsQuery, [teacherId]);
+
+        // Elimina las asociaciones con materias
+        const deleteTeacherSubjectsQuery = 'DELETE FROM teacher_subjects WHERE teacher_id = $1';
+        await db.query(deleteTeacherSubjectsQuery, [teacherId]);
 
         // Luego, elimina al profesor
         deleteTypeQuery = 'DELETE FROM teachers WHERE user_id = $1';

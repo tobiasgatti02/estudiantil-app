@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PublicacionesForm from '@/app/components/profesores/PublicacionesForm';
+import { getAdminByDni } from '@/app/lib/userActions';
 
 
 export default function MisMateriasPage() {
@@ -16,12 +17,30 @@ export default function MisMateriasPage() {
 
   useEffect(() => {
     if (status === "loading") return; // Don't do anything while loading
-    if (!session) {
-      signIn(); // Redirect to login if not authenticated
-      return;
-    }
+    useEffect(() => {
+      const checkUserExists = async () => {
+          if (session?.user?.dni) {
+              try {
+                  const admin = await getAdminByDni(session.user.dni);
+                  if (!admin) {
+                      // User doesn't exist anymore, sign out
+                      await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                  }
+              } catch (error) {
+                  console.error('Error checking user existence:', error);
+              }
+          }
+      };
+
+      // Check immediately and then every 90 seconds
+      checkUserExists();
+      const intervalId = setInterval(checkUserExists, 90000);
+
+      // Clear interval on component unmount
+      return () => clearInterval(intervalId);
+  }, [session]);
     
-    if (session.user?.dni) {
+    if (session?.user?.dni) {
       const fetchMaterias = async () => {
         try {
           const data = await getTeacherSubjectsDetails(session.user.dni);

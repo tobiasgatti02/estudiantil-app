@@ -45,10 +45,17 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
       return;
     }
 
+    const dniRegex = /^[0-9]+$/;
+    if (!dniRegex.test(newAdmin.dni)) {
+      setSaveMessage({ message: 'El DNI solo puede contener números.', error: true });
+      return;
+    }
+  
     if (parseInt(newAdmin.dni) < 0) {
       setSaveMessage({ message: 'El DNI no puede ser negativo.', error: true });
       return;
     }
+  
     try {
       await createUser({
         name: newAdmin.name,

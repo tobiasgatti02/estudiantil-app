@@ -6,7 +6,7 @@ interface User {
   name: string;
   dni: string;
   role: string;
-   permissions?: string[];
+  permissions?: string[];
 }
 
 interface UserContextValue {
