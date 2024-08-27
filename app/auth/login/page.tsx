@@ -39,7 +39,7 @@ const LoginForm = () => {
                 } else if (response.role === "teacher") {
                     router.push("/home/profesor/materias");
                 } else if (response.role === "student") {
-                    router.push("/student");
+                    router.push("/home/alumno/cursos");
                 } else if (response.role === "owner") {
                     router.push("/home/owner");
                 }

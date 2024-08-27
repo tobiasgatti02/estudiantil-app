@@ -11,6 +11,7 @@ export const {
 } = NextAuth({
     session: {
         strategy: 'jwt',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     callbacks: {
         async jwt({ token, user }) {
@@ -18,6 +19,7 @@ export const {
                  // @ts-ignore
                 token.role = user.user_type;
                 token.dni = user.dni;
+                token.name = user.name;
                 
             }
             return token;
@@ -28,12 +30,14 @@ export const {
 
                 session.user.user_type = token.role as string;
                 session.user.dni = token.dni as string; // Añade el dni a la sesión
+                session.user.name = token.name as string;
+
             }
             return session;
         },
     },
     providers: [
-        CredentialsProvider({
+        CredentialsProvider({   
             credentials: {
                 name: {},
                 password: {},

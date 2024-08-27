@@ -13,6 +13,42 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET 
 });
 
+
+export async function updateUserPassword(user_id: number, password: string) {
+  const query = `
+    UPDATE usuarios
+    SET password = $1
+    WHERE user_id = $2
+  `;
+  const values = [password, user_id];
+
+  try {
+    await db.query(query, values);
+  } catch (error: any) {
+    throw new Error('Error updating user password: ' + error.message);
+  }
+}
+
+
+export async function getPublicacionByID(publicationId: number) {
+  const query = `
+    SELECT p.publication_id, p.title, p.content, p.created_at, 
+           array_agg(json_build_object('file_id', f.file_id, 'file_name', f.file_name, 'file_path', f.file_path)) as files
+    FROM publications p
+    LEFT JOIN files f ON p.publication_id = f.publication_id
+    WHERE p.publication_id = $1
+    GROUP BY p.publication_id
+  `;
+  const values = [publicationId];
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows[0];
+  } catch (error: any) {
+    throw new Error('Error fetching publication: ' + error.message);
+  }
+}
+
 export async function getTeacherSubjectsDetails(dni: string) {
     const query = `
         SELECT 
@@ -90,6 +126,20 @@ export async function createPublication(subjectId: number, teacherId: number, ti
   }
   
   export async function deletePublication(publicationId: number, teacherId: number) {
+    const deleteFilesQuery = `
+      DELETE FROM files
+      WHERE publication_id = $1
+    `;
+
+    const values1 = [publicationId];
+
+    try {
+      await db.query(deleteFilesQuery, values1);
+    } catch (error: any) {
+      throw new Error('Error deleting publication files: ' + error.message);
+    }
+
+    
     const query = `
       DELETE FROM publications
       WHERE publication_id = $1 AND teacher_id = $2 AND created_at > NOW() - INTERVAL '1 week'
@@ -108,7 +158,7 @@ export async function createPublication(subjectId: number, teacherId: number, ti
 
   export async function getTeacherByDni(dni: string) {
     const query = `
-      SELECT t.teacher_id
+      SELECT t.teacher_id,u.user_id, u.password
       FROM teachers t
       INNER JOIN usuarios u ON t.user_id = u.user_id
       WHERE u.dni = $1;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
+import { getTeacherByDni, getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PublicacionesForm from '@/app/components/profesores/PublicacionesForm';
@@ -20,9 +20,10 @@ export default function MisMateriasPage() {
 
     const checkUserExists = async () => {
       if (session?.user?.dni) {
+        console.log('dni de usuario:', session.user.dni);
         try {
-          const admin = await getAdminByDni(session.user.dni);
-          if (!admin) {
+          const teacher = await getTeacherByDni(session.user.dni);
+          if (!teacher) {
             // User doesn't exist anymore, sign out
             await signOut({ redirect: true, callbackUrl: '/auth/login' });
           }
@@ -45,6 +46,8 @@ export default function MisMateriasPage() {
     if (status === "loading") return; // Don't do anything while loading
 
     if (session?.user?.dni) {
+      console.log('Fetching subjects...');
+      console.log('aaa',session.user.dni);
       const fetchMaterias = async () => {
         try {
           const data = await getTeacherSubjectsDetails(session.user.dni);
@@ -78,8 +81,7 @@ export default function MisMateriasPage() {
         {materias.map((materia) => (
           <li
             key={materia.subject_id}
-            className="flex justify-between items-center bg-gray-100 p-4 rounded shadow-md cursor-pointer"
-            onClick={() => handleMateriaClick(materia.subject_id)}
+            className="flex justify-between items-center bg-gray-100 p-4 rounded shadow-md"
           >
             <div className='md:flex gap-8 text-center'>
               <span>Carrera: {materia.career_name}</span>
@@ -92,7 +94,7 @@ export default function MisMateriasPage() {
         ))}
       </ul>
 
-      <h1 className="text-2xl font-bold text-center mb-4">
+      <h1 className="text-2xl font-bold text-center mt-8 mb-4">
         Crea una nueva publicación para la materia
       </h1>
 

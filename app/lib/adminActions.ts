@@ -332,6 +332,45 @@ export async function getCourseByDetails(careerName: string, year: number, caree
   }
 }
 
+export async function getCourseDetails(courseId: number) {
+  try {
+    const query = `
+      SELECT ca.name AS career_name, c.year, c.career_year, c.division
+      FROM courses c
+      LEFT JOIN careers ca ON c.career_id = ca.career_id
+      WHERE c.course_id = $1
+      LIMIT 1
+    `;
+    const values = [courseId];
+    const result = await db.query(query, values);
+
+    if (result.rows.length > 0) {
+      return result.rows[0];
+    } else {
+      return null;
+    }
+  } catch (error: any) {
+    throw new Error('Error fetching course details: ' + error.message);
+  }
+}
+
+
+export async function getSubjectScheduleByMonth(subjectId: number, month: number) {
+  try {
+    const query = `
+      SELECT *
+      FROM subject_schedules
+      WHERE subject_id = $1 AND month = $2
+      ORDER BY day_of_month, start_time
+    `;
+    const values = [subjectId, month];
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (error: any) {
+    throw new Error('Error fetching subject schedule by month: ' + error.message);
+  }
+}
+
 
 export async function updateTeacherForSubject(subjectId: number, teacherId: number) {
   try {

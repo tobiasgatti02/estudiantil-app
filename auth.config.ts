@@ -24,8 +24,8 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
       const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
-      const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor/materias');
-      const isOnStudent = nextUrl.pathname.startsWith('/home/student');
+      const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor');
+      const isOnStudent = nextUrl.pathname.startsWith('/home/alumno/cursos');
       const baseUrl = process.env.NEXTAUTH_URL;
       
 
@@ -48,7 +48,7 @@ export const authConfig: NextAuthConfig = {
             return true;
           case 'student':
             if (isOnOwner || isOnAdmin || isOnTeacher) {
-              return NextResponse.redirect(baseUrl + '/home/student');
+              return NextResponse.redirect(baseUrl + '/home/alumno/cursos');
             }
             return true;
           default:
@@ -99,16 +99,17 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }: { session: any; token: JWT }) {
 
-      return {
-        ...session,
-        user: {
+      if (token) {
+        session.user = {
           ...session.user,
           dni: token.dni,
           name: token.name,
           role: token.role,
-        },
-      };
+        };
+      }
+      return session;
     },
+
   },
   providers: [], 
 } satisfies NextAuthConfig;

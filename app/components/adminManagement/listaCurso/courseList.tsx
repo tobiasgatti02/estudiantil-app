@@ -48,9 +48,11 @@ export default function ClientCourseList() {
   useEffect(() => {
     async function checkPermissions() {
       try {
-        if (session?.user?.dni) {
+        if (session?.user?.dni  || user?.dni) {
+          const dni = session?.user?.dni || user?.dni || '';
+
           console.log(user);
-          const admin = await getAdminByDni(session.user.dni);
+          const admin = await getAdminByDni(dni);
           if (admin?.can_create_courses) {
             setCanCreateCourses(true);
           } else {

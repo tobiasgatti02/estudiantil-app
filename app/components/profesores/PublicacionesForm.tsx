@@ -137,11 +137,8 @@ export default function PublicacionesForm() {
 
   return (
     <div className="container mx-auto p-4">
-      <button onClick={() => router.back()} className="mb-4">
-        ← Atrás
-      </button>
+      
 
-      <h2 className="text-2xl font-bold mb-4">Crear nueva publicación</h2>
 
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="mb-4">
@@ -222,6 +219,13 @@ export default function PublicacionesForm() {
                 {pub.files.map((file: any) => (
                   <li key={file.file_id}>
                     <a href={file.file_path} download>{file.file_name}</a>
+                    <div>
+                    {file.file_path.endsWith('.pdf') ? (
+                        <embed src={file.file_path} type="application/pdf" className="mt-2 max-w-xs" />
+                    ) : (
+                        <img src={file.file_path} alt={file.file_name} className="mt-2 max-w-xs" />
+                    )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -237,7 +241,7 @@ export default function PublicacionesForm() {
             </button>
           )}
           <button
-            onClick={() => router.push(`/publicacion/${pub.publication_id}`)}
+            onClick={() => router.push(`/home/profesor/materias//materia/${materiaId}/publicacion/${pub.publication_id}`)}
             className="mt-2 ml-2 bg-green-500 text-white px-2 py-1 rounded text-sm"
           >
             Ver publicación

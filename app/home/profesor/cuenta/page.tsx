@@ -1,91 +1,147 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
-import { getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
+import { useSession } from 'next-auth/react';
+import { getTeacherByDni, updateUserPassword } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { useUser } from '@/app/context/UserContext';
 
-export default function MisMateriasPage() {
+export default function CuentaPage() {
   const { data: session, status } = useSession();
-  const [materias, setMaterias] = useState<any[]>([]);
+  interface TeacherData {
+    password: string;
+    user_id: string;
+    // Add other properties as needed
+  }
+  
+  const [datos, setDatos] = useState<TeacherData | null>(null);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(""); // Estado para mensaje de éxito
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const router = useRouter();
+  const user = useUser();
 
-  // Effect to check if user exists in the system
-  useEffect(() => {
-    if (status === "loading") return; // Don't do anything while loading
+  const [oldPassword, setOldPassword] = useState('');
 
-    const checkUserExists = async () => {
-      if (session?.user?.dni) {
-        try {
-          const admin = await getAdminByDni(session.user.dni);
-          if (!admin) {
-            // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
-          }
-        } catch (error) {
-          console.error('Error checking user existence:', error);
-        }
-      }
-    };
-
-    // Check immediately and then every 90 seconds
-    checkUserExists();
-    const intervalId = setInterval(checkUserExists, 90000);
-
-    // Clear interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [session, status]);
-
-  // Effect to fetch subjects
   useEffect(() => {
     if (status === "loading") return; // Don't do anything while loading
 
     if (session?.user?.dni) {
-      const fetchMaterias = async () => {
+      const fetchDatos = async () => {
         try {
-          const data = await getTeacherSubjectsDetails(session.user.dni);
-          setMaterias(data);
+          // @ts-ignore
+            const userDni = session?.user?.dni || user?.dni || '';
+          const data = await getTeacherByDni(userDni);
+          setDatos(data);
+          setOldPassword(data.password);
         } catch (err) {
-          //@ts-ignore
-          setError("Error al obtener las materias: " + err.message);
+          setError("Error al obtener las materias: " + (err as Error).message);
         }
       };
       
-      fetchMaterias();
+      fetchDatos();
     } else {
       setError("No se pudo obtener el DNI del usuario");
     }
   }, [session, status]);
 
-  function handleMateriaClick(subject_id: any): void {
-    router.push(`/home/profesor/materias/materia/${subject_id}`);
+  const handleChangePassword = async () => {
+    await validateAndChangePassword(oldPassword, newPassword, confirmNewPassword);
+  };
+
+  async function validateAndChangePassword(oldPassword: string, newPassword: string, confirmPassword: string) {
+    if (newPassword === oldPassword) {
+      setError('La nueva contraseña no puede ser igual a la anterior.');
+      return;
+    }
+
+    if (datos && oldPassword !== datos.password) {
+      setError('La contraseña actual no es correcta.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('La confirmación de la contraseña no coincide con la nueva contraseña.');
+      return;
+    }
+
+    await changePassword(newPassword);
+  }
+
+  async function changePassword(newPassword: string) {
+    try {
+      if (datos) {
+        await updateUserPassword(Number(datos.user_id), newPassword);
+      }
+      setSuccessMessage('Contraseña actualizada con éxito.');
+      setError(''); // Limpiar mensaje de error si hay éxito
+      // Refrescar la página después de un cambio exitoso
+      router.refresh();
+    } catch (error) {
+      //@ts-ignore
+      setError('Error al actualizar la contraseña: ' + error.message);
+      setSuccessMessage(''); // Limpiar mensaje de éxito si hay error
+    }
   }
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Mis Materias</h1>
+      <h1 className="text-2xl font-bold mb-4">Mi Cuenta</h1>
 
       {error && <p className="text-red-500 mt-2">{error}</p>}
+      {successMessage && <p className="text-green-500 mt-2">{successMessage}</p>}
 
-      <ul className="space-y-4 mt-4">
-        {materias.map((materia) => (
-          <li
-            key={materia.subject_id}
-            className="flex justify-between items-center bg-gray-100 p-4 rounded shadow-md cursor-pointer"
-            onClick={() => handleMateriaClick(materia.subject_id)}
-          >
-            <div className='md:flex gap-8 text-center'>
-              <span>Carrera: {materia.career_name}</span>
-              <span>Año de carrera: {materia.career_year}</span>
-              <span>División: {materia.division}</span>
-              <span>Año de curso: {materia.course_year}</span>
-              <span>Materia: {materia.subject_name}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Datos Personales</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Contraseña</label>
+          <input
+            type="text"
+            value={datos?.password}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+            disabled
+          />
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Cambiar Contraseña</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Escribir la contraseña actual de mi cuenta</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Escribir la nueva contraseña</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Repetir la nueva contraseña</label>
+          <input
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <button
+          onClick={handleChangePassword}
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Cambiar contraseña
+        </button>
+      </div>
     </div>
   );
 }
