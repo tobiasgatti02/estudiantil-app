@@ -1,6 +1,23 @@
 "use server"
 import {db} from '@vercel/postgres';
 
+
+export async function updateUserPassword(user_id: number, password: string) {
+  const query = `
+    UPDATE usuarios
+    SET password = $1
+    WHERE user_id = $2
+  `;
+  const values = [password, user_id];
+
+  try {
+    await db.query(query, values);
+  } catch (error: any) {
+    throw new Error('Error updating user password: ' + error.message);
+  }
+}
+
+
 export async function getStudentCourses(dni:number) {
     try {
       const query = `
@@ -19,10 +36,10 @@ export async function getStudentCourses(dni:number) {
   }
 
 
-export async function getStudentByDni(dni:number) {
+export async function   getStudentByDni(dni:number) {
     try {
       const query = `
-        SELECT s.student_id, u.user_id, u.dni
+        SELECT s.student_id, u.user_id, u.dni,u.password
         FROM students s
         LEFT JOIN usuarios u ON s.user_id = u.user_id
         WHERE u.dni = $1

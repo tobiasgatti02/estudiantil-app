@@ -30,6 +30,8 @@ export async function updateUserPassword(user_id: number, password: string) {
 }
 
 
+
+
 export async function getPublicacionByID(publicationId: number) {
   const query = `
     SELECT p.publication_id, p.title, p.content, p.created_at, 
@@ -49,6 +51,25 @@ export async function getPublicacionByID(publicationId: number) {
   }
 }
 
+export async function getTeachersAssociatedWithSubject(subjectId: number) {
+  const query = `
+    SELECT u.name, t.user_id, t.teacher_id
+    FROM teachers t
+    INNER JOIN usuarios u ON t.user_id = u.user_id
+    INNER JOIN teacher_subjects ts ON t.teacher_id = ts.teacher_id
+    WHERE ts.subject_id = $1
+  `;
+  const values = [subjectId];
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (error: any) {
+    throw new Error('Error fetching teachers associated with subject: ' + error.message);
+  }
+}
+
+
 export async function getTeacherSubjectsDetails(dni: string) {
     const query = `
         SELECT 
@@ -57,7 +78,8 @@ export async function getTeacherSubjectsDetails(dni: string) {
             cr.career_year,
             cr.division,
             s.name AS subject_name,
-            s.subject_id
+            s.subject_id,
+            u.name AS teacher_name
         FROM subjects s
         INNER JOIN courses cr ON s.course_id = cr.course_id
         INNER JOIN careers c ON cr.career_id = c.career_id
@@ -107,7 +129,7 @@ export async function createPublication(subjectId: number, teacherId: number, ti
   
   export async function getPublicationsForSubject(subjectId: number) {
     const query = `
-      SELECT p.publication_id, p.title, p.content, p.created_at, 
+      SELECT p.publication_id, p.title, p.content, p.created_at, teacher_id,
              array_agg(json_build_object('file_id', f.file_id, 'file_name', f.file_name, 'file_path', f.file_path)) as files
       FROM publications p
       LEFT JOIN files f ON p.publication_id = f.publication_id

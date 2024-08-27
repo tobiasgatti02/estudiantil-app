@@ -4,7 +4,7 @@ import Logout from '@/app/auth/logOut/page';
 import Link from 'next/link';
 
 const menuItems = [
-  { href: '/home/alumno', label: 'Mi Carrera' },
+  { href: '/home/alumno/cursos', label: 'Mi Carrera' },
   { href: '/home/alumno/cuenta', label: 'Mi Cuenta' },
   
 ];

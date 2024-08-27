@@ -1,0 +1,147 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { getStudentByDni, updateUserPassword } from '@/app/lib/studentActions';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
+
+export default function CuentaPage() {
+  const { data: session, status } = useSession();
+  interface StudentData {
+    password: string;
+    user_id: string;
+    // Add other properties as needed
+  }
+  
+  const [datos, setDatos] = useState<StudentData | null>(null);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(""); // Estado para mensaje de éxito
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const router = useRouter();
+  const user = useUser();
+
+  const [oldPassword, setOldPassword] = useState('');
+
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    if (session?.user?.dni) {
+      const fetchDatos = async () => {
+        try {
+          // @ts-ignore
+            const userDni = session?.user?.dni || user?.dni || '';
+          const data = await getStudentByDni(userDni);
+          setDatos(data);
+          setOldPassword(data.password);
+        } catch (err) {
+          setError("Error al obtener las materias: " + (err as Error).message);
+        }
+      };
+      
+      fetchDatos();
+    } else {
+      setError("No se pudo obtener el DNI del usuario");
+    }
+  }, [session, status]);
+
+  const handleChangePassword = async () => {
+    await validateAndChangePassword(oldPassword, newPassword, confirmNewPassword);
+  };
+
+  async function validateAndChangePassword(oldPassword: string, newPassword: string, confirmPassword: string) {
+    if (newPassword === oldPassword) {
+      setError('La nueva contraseña no puede ser igual a la anterior.');
+      return;
+    }
+
+    if (datos && oldPassword !== datos.password) {
+      setError('La contraseña actual no es correcta.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('La confirmación de la contraseña no coincide con la nueva contraseña.');
+      return;
+    }
+
+    await changePassword(newPassword);
+  }
+
+  async function changePassword(newPassword: string) {
+    try {
+      if (datos) {
+        await updateUserPassword(Number(datos.user_id), newPassword);
+      }
+      setSuccessMessage('Contraseña actualizada con éxito.');
+      setError(''); // Limpiar mensaje de error si hay éxito
+      // Refrescar la página después de un cambio exitoso
+      router.refresh();
+    } catch (error) {
+      //@ts-ignore
+      setError('Error al actualizar la contraseña: ' + error.message);
+      setSuccessMessage(''); // Limpiar mensaje de éxito si hay error
+    }
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Mi Cuenta</h1>
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {successMessage && <p className="text-green-500 mt-2">{successMessage}</p>}
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Datos Personales</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Contraseña</label>
+          <input
+            type="text"
+            value={datos?.password}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+            disabled
+          />
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Cambiar Contraseña</h2>
+        <div className="mb-4">
+          <label className="block text-gray-700">Escribir la contraseña actual de mi cuenta</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Escribir la nueva contraseña</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Repetir la nueva contraseña</label>
+          <input
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mt-2"
+          />
+        </div>
+        <button
+          onClick={handleChangePassword}
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Cambiar contraseña
+        </button>
+      </div>
+    </div>
+  );
+}

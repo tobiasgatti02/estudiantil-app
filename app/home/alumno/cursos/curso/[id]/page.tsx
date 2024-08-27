@@ -95,7 +95,10 @@ export default function CoursePage() {
       
       {courseDetails && (
         <h1 className="text-2xl font-bold mb-4">
-          Carrera - Año - Año carrera - División: {(courseDetails as any).career_name} - {(courseDetails as any).year} - {(courseDetails as any).career_year} - {(courseDetails as any).division}
+          Carrera: {(courseDetails as any).career_name } 
+             - Año: {(courseDetails as any).year } 
+             - Año carrera: {(courseDetails as any).career_year} 
+              - División: {(courseDetails as any).division}
         </h1>
       )}
 
@@ -138,7 +141,7 @@ export default function CoursePage() {
         </tbody>
       </table>
 
-      <h2 className="text-xl font-bold mb-4">Materias de tu curso</h2>
+      <h2 className="text-xl font-bold mb-4">Materias del curso</h2>
       <ul>
         {subjects.map((subject) => (
           <li
