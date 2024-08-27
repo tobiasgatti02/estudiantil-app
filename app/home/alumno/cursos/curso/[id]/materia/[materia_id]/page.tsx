@@ -12,6 +12,7 @@ type Publication = {
 };
 
 type Teacher = {
+  teacher_id: number;
   user_id: number;
   name: string;
 };
@@ -27,7 +28,7 @@ const TeacherSubjectPage: React.FC = () => {
     const fetchData = async () => {
       try {
         // Obtener detalles de la materia
-        const details = await getTeacherSubjectsDetails(subjectId);
+        const details = await getTeacherSubjectsDetails(subjectId.toString());
         setSubjectDetails(details);
         
         // Obtener publicaciones de la materia
