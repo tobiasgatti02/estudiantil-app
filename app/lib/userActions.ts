@@ -66,42 +66,15 @@ export async function getUserByDni(dni: string) {
 }
 
 
-export async function insertUser(userData: { name: string, email: string,dni:string, password: string, role: string}) {
-  try {
-    const query = `
-      INSERT INTO usuarios (name, email,dni, password, role)
-      VALUES ($1, $2, $3, $4,$5)
-    `;
-    const values = [
-      userData.name,
-      userData.email,
-      userData.dni,
-      userData.password,
-      userData.role,
-    ];
-    await db.query(query, values);
-  } catch (error: any) {
-    throw new Error('Error inserting user: ' + error.message);
-  }
-}
-export async function getUsers() {
-  try {
-    const query = `
-      SELECT * FROM usuarios
-    `;
-    const result
-      = await db.query(query);
-    return result.rows;
-  }
-  catch (error: any) {
-    throw new Error('Error getting users: ' + error.message);
-  }
-}
+
 export async function createUser(userData: { name: string, dni: string, password: string, user_type: string, permissions?: any }) {
   const client = await db.connect();
   try {
     await client.query('BEGIN');
-
+    
+    if (!/^\d+$/.test(userData.dni)) {
+      throw new Error('El dni solo debe contener números.');
+    }
     // Inserción en la tabla users
     const query = `
       INSERT INTO usuarios (name, dni, password, user_type)
