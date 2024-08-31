@@ -36,7 +36,7 @@ export async function getStudentCourses(dni:number) {
   }
 
 
-export async function   getStudentByDni(dni:number) {
+export async function getStudentByDni(dni:number) {
     try {
       const query = `
         SELECT s.student_id, u.user_id, u.dni,u.password
