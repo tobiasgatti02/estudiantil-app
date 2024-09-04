@@ -69,9 +69,10 @@ export default function ClientCourseList() {
 
   useEffect(() => {
     const checkUserExists = async () => {
-        if (session?.user?.dni) {
+        if (session?.user?.dni || user?.dni) {
             try {
-                const admin = await getAdminByDni(session.user.dni);
+                const dni = session?.user?.dni || user?.dni || '';
+                const admin = await getAdminByDni(dni);
                 if (!admin) {
                   doLogout();   
                 }
