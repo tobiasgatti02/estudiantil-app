@@ -2,7 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { getTeacherSubjectsDetails, getPublicationsForSubject, getTeachersAssociatedWithSubject } from '@/app/lib/teacherActions';
 import { useParams } from 'next/navigation';
-
+import { signOut } from 'next-auth/react';
+import { getStudentByDni } from '@/app/lib/studentActions';
+import { useSession } from 'next-auth/react';
+import { useUser } from '@/app/context/UserContext';
 type Publication = {
   publication_id: number;
   title: string;
@@ -23,6 +26,43 @@ const TeacherSubjectPage: React.FC = () => {
   const [subjectDetails, setSubjectDetails] = useState<any>(null);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [teacherNames, setTeacherNames] = useState<Map<number, string>>(new Map());
+  const { data: session, status } = useSession();
+  const { user } = useUser();
+
+
+
+
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    const checkUserExists = async () => {
+      if (session?.user?.dni || user?.dni) {
+        console.log('Checking user existence...');
+        console.log(user?.dni);
+        try {
+          const dni = session?.user?.dni || user?.dni || '';
+          const student = await getStudentByDni(Number(dni));
+          if (!student) {
+            // User doesn't exist anymore, sign out
+            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+          }
+        } catch (error) {
+          console.error('Error checking user existence:', error);
+        }
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);
+
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {

@@ -42,7 +42,7 @@ export default function MisMateriasPage() {
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [session, status]);// Dependencias actualizadas para verificar el estado de sesión
+  }, [session, status]);
 
     function handleCursoClick(cursoID: any): void {
         router.push(`/home/alumno/cursos/curso/${cursoID}`);

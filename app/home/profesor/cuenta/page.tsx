@@ -26,7 +26,7 @@ export default function CuentaPage() {
   const [oldPassword, setOldPassword] = useState('');
 
   useEffect(() => {
-    if (status === "loading") return; // Don't do anything while loading
+    if (status === "loading") return; 
 
     if (session?.user?.dni) {
       const fetchDatos = async () => {

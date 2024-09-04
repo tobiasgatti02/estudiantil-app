@@ -2,7 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseDetails, getSubjectsForCourse, getSubjectScheduleByMonth } from '@/app/lib/adminActions';
-
+import { signOut } from 'next-auth/react';
+import { getStudentByDni } from '@/app/lib/studentActions';
+import { useSession } from 'next-auth/react';
+import { useUser } from '@/app/context/UserContext';
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -14,6 +17,50 @@ export default function CoursePage() {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+    const { data: session, status } = useSession();
+    const user = useUser();
+
+
+
+
+    
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    const checkUserExists = async () => {
+        //@ts-ignore
+      if (session?.user?.dni || user?.dni) {
+        
+        
+        try {
+            //@ts-ignore
+          const dni = session?.user?.dni || user?.dni || '';
+          const student = await getStudentByDni(Number(dni));
+          if (!student) {
+            // User doesn't exist anymore, sign out
+            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+          }
+          
+        } catch (error) {
+          console.error('Error checking user existence:', error);
+        }
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);
+
+
+
+
+
+
+
 
   useEffect(() => {
     const fetchCourseData = async () => {

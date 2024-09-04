@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { getStudentByDni, updateUserPassword } from '@/app/lib/studentActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
@@ -24,6 +24,44 @@ export default function CuentaPage() {
   const user = useUser();
 
   const [oldPassword, setOldPassword] = useState('');
+
+
+
+
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    const checkUserExists = async () => {
+        //@ts-ignore
+      if (session?.user?.dni || user?.dni) {
+        console.log('dni de usuario:', session?.user.dni);
+        try {
+            //@ts-ignore
+          const dni = session?.user.dni || user.dni || '';
+          const student = await getStudentByDni(dni);
+          if (!student) {
+            // User doesn't exist anymore, sign out
+            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+          }
+        } catch (error) {
+          console.error('Error checking user existence:', error);
+        }
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);
+
+
+
+
+
+
 
   useEffect(() => {
     if (status === "loading") return; // Don't do anything while loading

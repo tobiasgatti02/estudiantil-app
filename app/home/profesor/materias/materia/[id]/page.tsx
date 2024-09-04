@@ -7,24 +7,28 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PublicacionesForm from '@/app/components/profesores/PublicacionesForm';
 import { getAdminByDni } from '@/app/lib/userActions';
+import { useUser } from '@/app/context/UserContext';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
   const [materias, setMaterias] = useState<any[]>([]);
   const [error, setError] = useState("");
   const router = useRouter();
+  const user = useUser();
 
   // Effect to check if user exists in the system
   useEffect(() => {
     if (status === "loading") return; // Don't do anything while loading
 
     const checkUserExists = async () => {
-      if (session?.user?.dni) {
-        console.log('dni de usuario:', session.user.dni);
+      //@ts-ignore
+      if (session?.user?.dni || user?.dni) {
+        console.log('dni de usuario:', session?.user.dni);
         try {
-          const teacher = await getTeacherByDni(session.user.dni);
+          //@ts-ignore
+          const dni = session?.user.dni || user.dni || '';
+          const teacher = await getTeacherByDni(dni);
           if (!teacher) {
-            // User doesn't exist anymore, sign out
             await signOut({ redirect: true, callbackUrl: '/auth/login' });
           }
         } catch (error) {
