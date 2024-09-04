@@ -2,6 +2,8 @@ import type { NextAuthConfig } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { JWT } from 'next-auth/jwt';
 import { db } from '@vercel/postgres';
+import { getUserByDNI } from './app/lib/userActions';
+import { signOut } from './auth';
 
 export const authConfig: NextAuthConfig = {
 
@@ -27,40 +29,45 @@ export const authConfig: NextAuthConfig = {
       const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor');
       const isOnStudent = nextUrl.pathname.startsWith('/home/alumno/cursos');
       const baseUrl = process.env.NEXTAUTH_URL;
-      
+      //@ts-ignore
+      const user = await getUserByDNI(auth?.user.dni);
 
-      if (isLoggedIn) {
-        switch (auth.user?.role) {
-          case 'owner':
-            if (!isOnOwner) {
-              return NextResponse.redirect(baseUrl + '/home/owner');
-            }
-            return true;
-          case 'admin':
-            if (!isOnAdmin) {
-              return NextResponse.redirect(baseUrl + '/home/admin/carreras');
-            }
-            return true;
-          case 'teacher':
-            if ( !isOnTeacher) {
-              return NextResponse.redirect(baseUrl + '/home/profesor/materias');
-            }
-            return true;
-          case 'student':
-            if (isOnOwner || isOnAdmin || isOnTeacher) {
-              return NextResponse.redirect(baseUrl + '/home/alumno/cursos');
-            }
-            return true;
-          default:
+      
+        if (isLoggedIn) {
+          if (!user) {
+            return signOut();
+          }
+          switch (auth.user?.role) {
+            case 'owner':
+              if (!isOnOwner) {
+                return NextResponse.redirect(baseUrl + '/home/owner');
+              }
+              return true;
+            case 'admin':
+              if (!isOnAdmin) {
+                return NextResponse.redirect(baseUrl + '/home/admin/carreras');
+              }
+              return true;
+            case 'teacher':
+              if ( !isOnTeacher) {
+                return NextResponse.redirect(baseUrl + '/home/profesor/materias');
+              }
+              return true;
+            case 'student':
+              if (isOnOwner || isOnAdmin || isOnTeacher) {
+                return NextResponse.redirect(baseUrl + '/home/alumno/cursos');
+              }
+              return true;
+            default:
+              return NextResponse.redirect(baseUrl + '/auth/login');
+          }
+        } else {
+          if (isOnOwner || isOnAdmin || isOnTeacher || isOnStudent) {
             return NextResponse.redirect(baseUrl + '/auth/login');
+          }
+          return true;
         }
-      } else {
-        if (isOnOwner || isOnAdmin || isOnTeacher || isOnStudent) {
-          return NextResponse.redirect(baseUrl + '/auth/login');
-        }
-        return true;
-      }
-    },
+      },
     async jwt({ token, user, trigger, session }) {
        
       if (trigger === 'signIn') {

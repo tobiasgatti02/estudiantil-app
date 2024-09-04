@@ -23,8 +23,7 @@ export default function CarrerasPage() {
                 const dni = session?.user?.dni || user?.dni || '';
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
-                    // User doesn't exist anymore, sign out
-                    await signOut({ redirect: true, callbackUrl: '/login' });
+                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

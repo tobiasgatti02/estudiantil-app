@@ -3,9 +3,7 @@ import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import CourseDetails from '../../../../../components/adminManagement/listaCurso/detallesCurso';
 import StudentList from '../../../../../components/adminManagement/listaCurso/listaAlumnos';
-import CreateSubject from '@/app/components/materias/crearMateria';
 import { useParams } from 'next/navigation';
-import SubjectPage from './materia/[materia]/page';
 import SubjectList from '@/app/components/materias/subjectList';
 import { signOut, useSession } from 'next-auth/react';
 import { getAdminByDni } from '@/app/lib/userActions';
@@ -15,28 +13,7 @@ export default function CoursePage() {
   const id = params.id
   const { data: session} = useSession();
 
-  useEffect(() => {
-    const checkUserExists = async () => {
-        if (session?.user?.dni) {
-            try {
-                const admin = await getAdminByDni(session.user.dni);
-                if (!admin) {
-                    // User doesn't exist anymore, sign out
-                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
-                }
-            } catch (error) {
-                console.error('Error checking user existence:', error);
-            }
-        }
-    };
 
-    // Check immediately and then every 90 seconds
-    checkUserExists();
-    const intervalId = setInterval(checkUserExists, 90000);
-
-    // Clear interval on component unmount
-    return () => clearInterval(intervalId);
-}, [session]);
 
   return (
     <div className="container mx-auto p-4">

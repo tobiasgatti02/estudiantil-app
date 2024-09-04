@@ -1,11 +1,12 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseDetails, getSubjectsForCourse, getSubjectScheduleByMonth } from '@/app/lib/adminActions';
 import { signOut } from 'next-auth/react';
 import { getStudentByDni } from '@/app/lib/studentActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
+import Horarios from '@/app/components/alumnos/horarios';
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -102,11 +103,11 @@ export default function CoursePage() {
   };
 
   const getFirstDayOfMonth = (month: number, year: number) => {
-    return new Date(year, month, 1).getDay();
+    return new Date(year, month, 0).getDay();
   };
 
   const renderCalendar = () => {
-    const year = 2023;
+    const year = getCurrentYear();
     const daysInMonth = getDaysInMonth(currentMonth, year);
     const firstDay = getFirstDayOfMonth(currentMonth, year);
     const calendar = [];
@@ -139,7 +140,6 @@ export default function CoursePage() {
       <button onClick={() => router.back()} className="mb-4 px-4 py-2 bg-gray-200 rounded">
         ← Atrás
       </button>
-      
       {courseDetails && (
         <h1 className="text-2xl font-bold mb-4">
           Carrera: {(courseDetails as any).career_name } 
@@ -163,30 +163,13 @@ export default function CoursePage() {
       </div>
 
       <h2 className="text-xl font-bold mb-4">Horarios para el {selectedDate} de {months[currentMonth]}</h2>
-      <table className="w-full mb-8">
-        <thead>
-          <tr>
-            <th>Día</th>
-            <th>Materia</th>
-            <th>Hora entrada</th>
-            <th>Hora salida</th>
-            <th>Lugar</th>
-            <th>Aula</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredSchedules.map((schedule, index) => (
-            <tr key={index}>
-              <td>{days[(schedule.day_of_month - 1) % 7]}</td>
-              <td>{subjects.find(s => s.subject_id === schedule.subject_id)?.name}</td>
-              <td>{schedule.start_time}</td>
-              <td>{schedule.end_time}</td>
-              <td>{schedule.location}</td>
-              <td>{schedule.classroom}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <Suspense fallback={<div>Cargando horarios...</div>}>
+        <Horarios 
+        filteredSchedules={filteredSchedules} 
+        days={days} 
+        subjects={subjects} />
+      </Suspense>
 
       <h2 className="text-xl font-bold mb-4">Materias del curso</h2>
       <ul>
@@ -203,3 +186,7 @@ export default function CoursePage() {
     </div>
   );
 }
+function getCurrentYear() {
+  return new Date().getFullYear();
+}
+
