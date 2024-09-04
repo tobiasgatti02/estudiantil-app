@@ -5,6 +5,11 @@ export default async function CourseDetails({ courseId }: { courseId: number }) 
   console.log(courseId);
   const course = courses.find(c => c.course_id === courseId);
 
+
+  
+
+
+
   if (!course) {
     return <div>Course not found</div>;
   }

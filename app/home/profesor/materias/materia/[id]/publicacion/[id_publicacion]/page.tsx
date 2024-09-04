@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { getPublicacionByID, getTeacherByDni } from '@/app/lib/teacherActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 
 export default function PublicacionDetalle() {
   const [publicacion, setPublicacion] = useState<any>(null);
@@ -30,6 +31,38 @@ export default function PublicacionDetalle() {
 
     fetchProfesorID();
   }, [userDni]);
+
+
+
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    const checkUserExists = async () => {
+      //@ts-ignore
+      if (session?.user?.dni || user?.dni) {
+        console.log('dni de usuario:', session?.user.dni);
+        try {
+          //@ts-ignore
+          const dni = session?.user.dni || user.dni || '';
+          const teacher = await getTeacherByDni(dni);
+          if (!teacher) {
+            Logout();
+          }
+        } catch (error) {
+          console.error('Error checking user existence:', error);
+        }
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);
+
+
 
   useEffect(() => {
     if (profesorID !== null) {

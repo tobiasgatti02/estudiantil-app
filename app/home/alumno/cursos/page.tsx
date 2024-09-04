@@ -4,6 +4,8 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { getStudentByDni, getStudentCourses } from '@/app/lib/studentActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
+import { log } from 'console';
+import Logout from '@/app/auth/logOut/page';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
@@ -25,7 +27,7 @@ export default function MisMateriasPage() {
           const student = await getStudentByDni(Number(dni));
           if (!student) {
             // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+            Logout();
           }
           const cursos = await getStudentCourses(Number(dni));
           console.log(cursos);

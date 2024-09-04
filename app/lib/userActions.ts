@@ -3,7 +3,7 @@
 import { db } from "@vercel/postgres";
 import { signIn, signOut } from "@/auth";
 import { permission } from "process";
-import { signOut as logout } from "next-auth/react";
+
 
 export async function doLogout() {
   await signOut({ redirectTo: "/auth/login" });
@@ -377,10 +377,7 @@ export async function deleteUser(dni: string) {
       DELETE FROM usuarios WHERE dni = $1
     `;
     await db.query(deleteUserQuery, [dni]);
-
-
-    await logout({ redirect: true, callbackUrl: '/auth/login' });
-
+    
   } catch (error: any) {
     console.error('Error deleting user:', error);
     throw new Error('Error deleting user: ' + error.message);

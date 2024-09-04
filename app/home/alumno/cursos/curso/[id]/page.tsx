@@ -7,6 +7,8 @@ import { getStudentByDni } from '@/app/lib/studentActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
 import Horarios from '@/app/components/alumnos/horarios';
+import { log } from 'console';
+import Logout from '@/app/auth/logOut/page';
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -39,7 +41,7 @@ export default function CoursePage() {
           const student = await getStudentByDni(Number(dni));
           if (!student) {
             // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+            Logout();
           }
           
         } catch (error) {

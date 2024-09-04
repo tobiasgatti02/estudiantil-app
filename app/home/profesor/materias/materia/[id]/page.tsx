@@ -8,6 +8,7 @@ import Link from 'next/link';
 import PublicacionesForm from '@/app/components/profesores/PublicacionesForm';
 import { getAdminByDni } from '@/app/lib/userActions';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
@@ -29,7 +30,7 @@ export default function MisMateriasPage() {
           const dni = session?.user.dni || user.dni || '';
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+            Logout();
           }
         } catch (error) {
           console.error('Error checking user existence:', error);

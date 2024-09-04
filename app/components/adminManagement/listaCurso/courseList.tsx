@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { getCourses } from '@/app/lib/adminActions';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import Link from 'next/link';
 import CreateCourseForm from '../formCurso/createCourseForm';
 import { useRouter } from 'next/navigation';
@@ -23,7 +23,7 @@ export default function ClientCourseList() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [canCreateCourses, setCanCreateCourses] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     async function fetchCourses() {
       if (user && user.permissions) {
@@ -73,8 +73,7 @@ export default function ClientCourseList() {
             try {
                 const admin = await getAdminByDni(session.user.dni);
                 if (!admin) {
-                    // User doesn't exist anymore, sign out
-                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                  doLogout();   
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

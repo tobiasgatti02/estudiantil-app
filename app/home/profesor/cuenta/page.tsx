@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { getTeacherByDni, updateUserPassword } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 
 export default function CuentaPage() {
   const { data: session, status } = useSession();
@@ -50,6 +51,37 @@ export default function CuentaPage() {
   const handleChangePassword = async () => {
     await validateAndChangePassword(oldPassword, newPassword, confirmNewPassword);
   };
+
+
+  useEffect(() => {
+    if (status === "loading") return; // Don't do anything while loading
+
+    const checkUserExists = async () => {
+        //@ts-ignore
+      if (session?.user?.dni || user?.dni) {
+        console.log('dni de usuario:', session?.user.dni);
+        try {
+            //@ts-ignore
+          const dni = session?.user.dni || user.dni || '';
+          const teacher = await getTeacherByDni(dni);
+          if (!teacher) {
+            // User doesn't exist anymore, sign out
+            Logout();        }
+        } catch (error) {
+          console.error('Error checking user existence:', error);
+        }
+      }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [session, status]);
+
+
 
   async function validateAndChangePassword(oldPassword: string, newPassword: string, confirmPassword: string) {
     if (newPassword === oldPassword) {

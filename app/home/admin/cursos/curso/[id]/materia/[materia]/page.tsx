@@ -6,6 +6,7 @@ import SubjectSchedule from '@/app/components/materias/horariosMaterias';
 import { useParams } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { getAdminByDni } from '@/app/lib/userActions';
+import Logout from '@/app/auth/logOut/page';
 
 export default function SubjectPage() {
   const params = useParams();
@@ -18,8 +19,7 @@ export default function SubjectPage() {
             try {
                 const admin = await getAdminByDni(session.user.dni);
                 if (!admin) {
-                    // User doesn't exist anymore, sign out
-                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                    Logout();
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

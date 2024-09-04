@@ -5,6 +5,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { getStudentByDni, updateUserPassword } from '@/app/lib/studentActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 
 export default function CuentaPage() {
   const { data: session, status } = useSession();
@@ -41,8 +42,7 @@ export default function CuentaPage() {
           const student = await getStudentByDni(dni);
           if (!student) {
             // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
-          }
+            Logout();        }
         } catch (error) {
           console.error('Error checking user existence:', error);
         }

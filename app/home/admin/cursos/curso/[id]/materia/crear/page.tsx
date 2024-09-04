@@ -1,4 +1,5 @@
 "use client"
+import Logout from "@/app/auth/logOut/page";
 import CreateSubject from "@/app/components/materias/crearMateria";
 import { getAdminByDni } from "@/app/lib/userActions";
 import { signOut, useSession } from "next-auth/react";
@@ -16,8 +17,7 @@ export default function CrearMateria() {
                 try {
                     const admin = await getAdminByDni(session.user.dni);
                     if (!admin) {
-                        // User doesn't exist anymore, sign out
-                        await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                        Logout();
                     }
                 } catch (error) {
                     console.error('Error checking user existence:', error);

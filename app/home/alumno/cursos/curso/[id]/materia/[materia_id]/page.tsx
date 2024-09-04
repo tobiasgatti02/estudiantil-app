@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react';
 import { getStudentByDni } from '@/app/lib/studentActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 type Publication = {
   publication_id: number;
   title: string;
@@ -44,7 +45,7 @@ const TeacherSubjectPage: React.FC = () => {
           const student = await getStudentByDni(Number(dni));
           if (!student) {
             // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+            Logout();
           }
         } catch (error) {
           console.error('Error checking user existence:', error);

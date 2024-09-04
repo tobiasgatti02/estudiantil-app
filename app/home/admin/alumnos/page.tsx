@@ -6,6 +6,8 @@ import { getAdminByDni, getUsersByRole } from '@/app/lib/userActions';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
 import StudentManagement from '@/app/components/ownerManagement/usuariosEstudiantes/studentManagement';
 import { useUser } from '@/app/context/UserContext';
+import { log } from 'console';
+import Logout from '@/app/auth/logOut/page';
 
 const AdminCreateUsers = () => {
     const { data: session } = useSession(); 
@@ -77,8 +79,7 @@ const AdminCreateUsers = () => {
                 try {
                     const admin = await getAdminByDni(session.user.dni);
                     if (!admin) {
-                        // User doesn't exist anymore, sign out
-                        await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                        Logout();
                     }
                 } catch (error) {
                     console.error('Error checking user existence:', error);

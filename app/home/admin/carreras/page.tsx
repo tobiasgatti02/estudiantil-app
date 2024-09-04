@@ -7,6 +7,7 @@ import { getCarreras, deleteCarrera } from '@/app/lib/adminActions';
 import { getAdminByDni } from '@/app/lib/userActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
+import Logout from '@/app/auth/logOut/page';
 
 export default function CarrerasPage() {
   const { data: session } = useSession(); // Obtén la sesión
@@ -23,7 +24,7 @@ export default function CarrerasPage() {
                 const dni = session?.user?.dni || user?.dni || '';
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
-                    await signOut({ redirect: true, callbackUrl: '/auth/login' });
+                  Logout();
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

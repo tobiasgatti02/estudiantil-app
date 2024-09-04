@@ -6,13 +6,36 @@ import StudentList from '../../../../../components/adminManagement/listaCurso/li
 import { useParams } from 'next/navigation';
 import SubjectList from '@/app/components/materias/subjectList';
 import { signOut, useSession } from 'next-auth/react';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 
 export default function CoursePage() {
   const params = useParams()
   const id = params.id
   const { data: session} = useSession();
 
+
+
+  useEffect(() => {
+    const checkUserExists = async () => {
+        if (session?.user?.dni) {
+            try {
+                const admin = await getAdminByDni(session.user.dni);
+                if (!admin) {
+                  doLogout();   
+                }
+            } catch (error) {
+                console.error('Error checking user existence:', error);
+            }
+        }
+    };
+
+    // Check immediately and then every 90 seconds
+    checkUserExists();
+    const intervalId = setInterval(checkUserExists, 90000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+}, [session]);
 
 
   return (

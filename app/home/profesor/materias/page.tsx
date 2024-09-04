@@ -5,6 +5,7 @@ import { getTeacherByDni, getTeacherSubjectsDetails } from '@/app/lib/teacherAct
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import { getAdminByDni } from '@/app/lib/userActions';
+import Logout from '@/app/auth/logOut/page';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
@@ -25,7 +26,7 @@ export default function MisMateriasPage() {
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
             // User doesn't exist anymore, sign out
-            await signOut({ redirect: true, callbackUrl: '/auth/login' });
+            Logout();
           }
           const subjects = await getTeacherSubjectsDetails(dni);
           setMaterias(subjects);
