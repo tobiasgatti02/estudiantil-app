@@ -10,6 +10,8 @@ import Link from 'next/link';
 import CreateCourseForm from '../formCurso/createCourseForm';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
+import { log } from 'console';
+import Logout from '@/app/auth/logOut/page';
 export default function ClientCourseList() {
     const { user } = useUser();
 
@@ -76,7 +78,8 @@ export default function ClientCourseList() {
                 const dni = session?.user?.dni || user?.dni || '';
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
-                  await signOut({ redirectTo: "/auth/login" });
+                  console.log('no existe el admin');
+                  doLogout();
                   router.refresh();
                 
                 }
