@@ -81,6 +81,7 @@ export default function ClientCourseList() {
 
                   router.push('/auth/login');
                   doLogout();
+                  console.log("no existe", session);
                   
                 }
             } catch (error) {

@@ -44,6 +44,8 @@ export default function CoursePage() {
             // User doesn't exist anymore, sign out
             router.push('/auth/login');
             doLogout();
+            router.refresh();
+            window.location.reload();
           }
           
         } catch (error) {

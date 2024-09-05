@@ -25,8 +25,7 @@ export default function CarrerasPage() {
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
                     router.push('/auth/login');
-                    
-                  doLogout();
+                    doLogout();
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);
