@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import { getAdminByDni, getUsersByRole } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni, getUsersByRole } from '@/app/lib/userActions';
 import TeacherManagement from '@/app/components/ownerManagement/usuariosProfesores/teacherManagement';
 import StudentManagement from '@/app/components/ownerManagement/usuariosEstudiantes/studentManagement';
 import { useUser } from '@/app/context/UserContext';
 import { log } from 'console';
 import Logout from '@/app/auth/logOut/page';
+import { useRouter } from 'next/navigation';
+
 
 const AdminCreateUsers = () => {
     const { data: session } = useSession(); 
@@ -15,7 +17,7 @@ const AdminCreateUsers = () => {
     const [activeSubSection, setActiveSubSection] = useState('Existentes');
     const [users, setUsers] = useState<any[]>([]);
     const { user } = useUser();
-    
+    const router = useRouter();
     const [permissions, setPermissions] = useState({
         can_create_teachers: false,
         can_delete_teachers: false,
@@ -79,7 +81,8 @@ const AdminCreateUsers = () => {
                 try {
                     const admin = await getAdminByDni(session.user.dni);
                     if (!admin) {
-                        Logout();
+                        router.push('/auth/login');
+                        doLogout();
                     }
                 } catch (error) {
                     console.error('Error checking user existence:', error);

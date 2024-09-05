@@ -1,23 +1,26 @@
 "use client"
 import Logout from "@/app/auth/logOut/page";
 import CreateSubject from "@/app/components/materias/crearMateria";
-import { getAdminByDni } from "@/app/lib/userActions";
+import { doLogout, getAdminByDni } from "@/app/lib/userActions";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function CrearMateria() {
     const params = useParams();
     const courseId = Number(params.id);
     const { data: session } = useSession();
+    const router = useRouter();
+
     useEffect(() => {
         const checkUserExists = async () => {
             if (session?.user?.dni) {
                 try {
                     const admin = await getAdminByDni(session.user.dni);
                     if (!admin) {
-                        Logout();
+                        router.push('/auth/login');
+                        doLogout();
                     }
                 } catch (error) {
                     console.error('Error checking user existence:', error);

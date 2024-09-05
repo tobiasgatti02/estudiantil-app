@@ -6,6 +6,7 @@ import { getTeacherByDni, updateUserPassword } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import Logout from '@/app/auth/logOut/page';
+import { doLogout } from '@/app/lib/userActions';
 
 export default function CuentaPage() {
   const { data: session, status } = useSession();
@@ -66,7 +67,12 @@ export default function CuentaPage() {
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
             // User doesn't exist anymore, sign out
-            Logout();        }
+            router.push('/auth/login');
+            doLogout();
+
+          
+          
+          }
         } catch (error) {
           console.error('Error checking user existence:', error);
         }

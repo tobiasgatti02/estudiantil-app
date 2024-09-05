@@ -35,6 +35,7 @@ const LoginForm = () => {
 
                 if (response.role === "admin") {
                     console.log(response.permissions);
+                    router.refresh();
                     router.push("/home/admin/cursos");
                 } else if (response.role === "teacher") {
                     router.push("/home/profesor/materias");

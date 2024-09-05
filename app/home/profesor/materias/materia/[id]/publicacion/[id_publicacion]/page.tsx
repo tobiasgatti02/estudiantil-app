@@ -5,6 +5,7 @@ import { getPublicacionByID, getTeacherByDni } from '@/app/lib/teacherActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
 import Logout from '@/app/auth/logOut/page';
+import { doLogout } from '@/app/lib/userActions';
 
 export default function PublicacionDetalle() {
   const [publicacion, setPublicacion] = useState<any>(null);
@@ -46,7 +47,8 @@ export default function PublicacionDetalle() {
           const dni = session?.user.dni || user.dni || '';
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
-            Logout();
+            router.push('/auth/login');
+            doLogout();
           }
         } catch (error) {
           console.error('Error checking user existence:', error);

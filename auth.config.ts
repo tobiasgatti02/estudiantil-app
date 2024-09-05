@@ -31,12 +31,13 @@ export const authConfig: NextAuthConfig = {
       const baseUrl = process.env.NEXTAUTH_URL;
       //@ts-ignore
       const user = await getUserByDNI(auth?.user.dni);
-
+    
       
-        if (isLoggedIn) {
+        if (isLoggedIn && user) {
           if (!user) {
             return signOut();
           }
+          console.log("hola");
           switch (auth.user?.role) {
             case 'owner':
               if (!isOnOwner) {
@@ -45,7 +46,7 @@ export const authConfig: NextAuthConfig = {
               return true;
             case 'admin':
               if (!isOnAdmin) {
-                return NextResponse.redirect(baseUrl + '/home/admin/carreras');
+                return NextResponse.redirect(baseUrl + '/home/admin/cursos');
               }
               return true;
             case 'teacher':

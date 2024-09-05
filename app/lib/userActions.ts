@@ -304,6 +304,8 @@ export async function updateUser(userData: { dni: string, password: string, role
 export async function deleteUser(dni: string) {
   try {
     // Primero, recupera el user_id y el user_type
+
+
     const getUserQuery = `
       SELECT user_id, user_type FROM usuarios WHERE dni = $1
     `;
@@ -378,6 +380,7 @@ export async function deleteUser(dni: string) {
     `;
     await db.query(deleteUserQuery, [dni]);
     
+
   } catch (error: any) {
     console.error('Error deleting user:', error);
     throw new Error('Error deleting user: ' + error.message);

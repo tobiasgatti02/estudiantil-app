@@ -4,7 +4,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { getTeacherByDni, getTeacherSubjectsDetails } from '@/app/lib/teacherActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import Logout from '@/app/auth/logOut/page';
 
 export default function MisMateriasPage() {
@@ -26,7 +26,8 @@ export default function MisMateriasPage() {
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
             // User doesn't exist anymore, sign out
-            Logout();
+            router.push('/auth/login');
+            doLogout();
           }
           const subjects = await getTeacherSubjectsDetails(dni);
           setMaterias(subjects);

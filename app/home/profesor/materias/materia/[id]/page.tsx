@@ -6,7 +6,7 @@ import { getTeacherByDni, getTeacherSubjectsDetails } from '@/app/lib/teacherAct
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PublicacionesForm from '@/app/components/profesores/PublicacionesForm';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import { useUser } from '@/app/context/UserContext';
 import Logout from '@/app/auth/logOut/page';
 
@@ -30,7 +30,8 @@ export default function MisMateriasPage() {
           const dni = session?.user.dni || user.dni || '';
           const teacher = await getTeacherByDni(dni);
           if (!teacher) {
-            Logout();
+            router.push('/auth/login');
+            doLogout();
           }
         } catch (error) {
           console.error('Error checking user existence:', error);

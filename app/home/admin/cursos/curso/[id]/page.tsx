@@ -3,7 +3,7 @@ import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import CourseDetails from '../../../../../components/adminManagement/listaCurso/detallesCurso';
 import StudentList from '../../../../../components/adminManagement/listaCurso/listaAlumnos';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import SubjectList from '@/app/components/materias/subjectList';
 import { signOut, useSession } from 'next-auth/react';
 import { doLogout, getAdminByDni } from '@/app/lib/userActions';
@@ -12,15 +12,14 @@ export default function CoursePage() {
   const params = useParams()
   const id = params.id
   const { data: session} = useSession();
-
-
-
+  const router = useRouter();
   useEffect(() => {
     const checkUserExists = async () => {
         if (session?.user?.dni) {
             try {
                 const admin = await getAdminByDni(session.user.dni);
                 if (!admin) {
+                  router.push('/auth/login');
                   doLogout();   
                 }
             } catch (error) {

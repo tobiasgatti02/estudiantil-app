@@ -33,6 +33,7 @@ export const {
                 session.user.name = token.name as string;
 
             }
+            
             return session;
         },
     },

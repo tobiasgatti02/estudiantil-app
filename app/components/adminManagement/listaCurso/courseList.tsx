@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {  useSession } from 'next-auth/react';
-import { signOut } from "@/auth";
-
+import { signOut } from "next-auth/react";
 import { getCourses } from '@/app/lib/adminActions';
 import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import Link from 'next/link';
@@ -78,10 +77,11 @@ export default function ClientCourseList() {
                 const dni = session?.user?.dni || user?.dni || '';
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
-                  console.log('no existe el admin');
+                  
+
+                  router.push('/auth/login');
                   doLogout();
-                  router.refresh();
-                
+                  
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

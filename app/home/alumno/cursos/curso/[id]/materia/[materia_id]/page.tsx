@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { getTeacherSubjectsDetails, getPublicationsForSubject, getTeachersAssociatedWithSubject } from '@/app/lib/teacherActions';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { getStudentByDni } from '@/app/lib/studentActions';
 import { useSession } from 'next-auth/react';
 import { useUser } from '@/app/context/UserContext';
 import Logout from '@/app/auth/logOut/page';
+import { doLogout } from '@/app/lib/userActions';
 type Publication = {
   publication_id: number;
   title: string;
@@ -29,6 +30,7 @@ const TeacherSubjectPage: React.FC = () => {
   const [teacherNames, setTeacherNames] = useState<Map<number, string>>(new Map());
   const { data: session, status } = useSession();
   const { user } = useUser();
+  const router = useRouter();
 
 
 
@@ -45,7 +47,8 @@ const TeacherSubjectPage: React.FC = () => {
           const student = await getStudentByDni(Number(dni));
           if (!student) {
             // User doesn't exist anymore, sign out
-            Logout();
+            router.push('/auth/login');
+            doLogout();
           }
         } catch (error) {
           console.error('Error checking user existence:', error);

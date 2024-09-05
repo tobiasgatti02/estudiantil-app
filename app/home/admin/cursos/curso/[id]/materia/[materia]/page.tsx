@@ -3,9 +3,9 @@ import { Suspense, useDebugValue, useEffect } from 'react';
 import Link from 'next/link';
 import SubjectDetails from '@/app/components/materias/detallesMaterias';
 import SubjectSchedule from '@/app/components/materias/horariosMaterias';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import Logout from '@/app/auth/logOut/page';
 
 export default function SubjectPage() {
@@ -13,13 +13,15 @@ export default function SubjectPage() {
   const courseId = Number(params.id);
   const subjectId = Number(params.materia);
   const { data: session } = useSession();
+  const router = useRouter();
   useEffect(() => {
     const checkUserExists = async () => {
         if (session?.user?.dni) {
             try {
                 const admin = await getAdminByDni(session.user.dni);
                 if (!admin) {
-                    Logout();
+                    router.push('/auth/login');
+                    doLogout();
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);

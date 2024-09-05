@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import { log } from 'console';
 import Logout from '@/app/auth/logOut/page';
+import { doLogout } from '@/app/lib/userActions';
 
 export default function MisMateriasPage() {
   const { data: session, status } = useSession();
@@ -27,7 +28,8 @@ export default function MisMateriasPage() {
           const student = await getStudentByDni(Number(dni));
           if (!student) {
             // User doesn't exist anymore, sign out
-            Logout();
+            router.push('/auth/login');
+            doLogout();
           }
           const cursos = await getStudentCourses(Number(dni));
           console.log(cursos);

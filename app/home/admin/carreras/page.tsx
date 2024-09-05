@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import CarreraForm from '@/app/components/carreras/carreras';
 import { getCarreras, deleteCarrera } from '@/app/lib/adminActions';
-import { getAdminByDni } from '@/app/lib/userActions';
+import { doLogout, getAdminByDni } from '@/app/lib/userActions';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import Logout from '@/app/auth/logOut/page';
@@ -24,7 +24,9 @@ export default function CarrerasPage() {
                 const dni = session?.user?.dni || user?.dni || '';
                 const admin = await getAdminByDni(dni);
                 if (!admin) {
-                  Logout();
+                    router.push('/auth/login');
+                    
+                  doLogout();
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);
