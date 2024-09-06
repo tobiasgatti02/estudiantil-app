@@ -55,7 +55,7 @@ export const authConfig: NextAuthConfig = {
               }
               return true;
             case 'student':
-              if (isOnOwner || isOnAdmin || isOnTeacher) {
+              if (!isOnStudent) {
                 return NextResponse.redirect(baseUrl + '/home/alumno/cursos');
               }
               return true;
