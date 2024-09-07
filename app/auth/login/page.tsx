@@ -75,7 +75,15 @@ const LoginForm = () => {
                     </div>
                     <div>
                         <label htmlFor="dni" className="block text-sm font-medium text-gray-700">Dni</label>
-                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="number" name="dni" id="dni" required onInput={handleDniInput} />
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="number" name="dni" id="dni" required 
+                        
+                        onKeyDown={(e) => {
+                            if (e.key === '.' || e.key.toLowerCase() === 'e' || e.key.toLowerCase() === '-'
+                              || e.key.toLowerCase() === ',' || e.key.toLowerCase() === '+') {
+                              e.preventDefault();
+                            }
+                          }}
+                        onInput={handleDniInput} />
                     </div>
                     <button type="submit" className="w-full py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled={loading}>
                         {loading ? 'Logging in...' : 'Credential Login'}

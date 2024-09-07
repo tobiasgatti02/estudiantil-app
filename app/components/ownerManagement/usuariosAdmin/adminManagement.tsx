@@ -180,6 +180,12 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
               type="number"
               name="dni"
               value={newAdmin.dni}
+              onKeyDown={(e) => {
+                if (e.key === '.' || e.key.toLowerCase() === 'e' || e.key.toLowerCase() === '-'
+                  || e.key.toLowerCase() === ',' || e.key.toLowerCase() === '+') {
+                  e.preventDefault();
+                }
+              }}
               onChange={handleInputChange}
               className="border rounded p-2"
               

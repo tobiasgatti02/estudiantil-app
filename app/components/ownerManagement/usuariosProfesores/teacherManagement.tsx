@@ -152,6 +152,12 @@ const TeacherManagement: React.FC<TeacherManagementProps> = ({ users, activeSubS
                             value={newTeacher.dni} 
                             onChange={handleInputChange} 
                             className="w-full p-2 border rounded" 
+                            onKeyDown={(e) => {
+                                if (e.key === '.' || e.key.toLowerCase() === 'e' || e.key.toLowerCase() === '-'
+                                  || e.key.toLowerCase() === ',' || e.key.toLowerCase() === '+') {
+                                  e.preventDefault();
+                                }
+                              }}
                             required 
                         />
                     </div>

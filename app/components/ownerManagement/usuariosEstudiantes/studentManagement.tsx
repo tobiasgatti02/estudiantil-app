@@ -181,6 +181,12 @@ const StudentManagement: React.FC<StudentManagementProps> = ({ users, activeSubS
                             id="dni" 
                             name="dni" 
                             value={newStudent.dni} 
+                            onKeyDown={(e) => {
+                                if (e.key === '.' || e.key.toLowerCase() === 'e' || e.key.toLowerCase() === '-'
+                                  || e.key.toLowerCase() === ',' || e.key.toLowerCase() === '+') {
+                                  e.preventDefault();
+                                }
+                              }}
                             onChange={handleInputChange} 
                             className="w-full p-2 border rounded" 
                             required 
