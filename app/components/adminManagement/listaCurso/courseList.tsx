@@ -128,9 +128,11 @@ export default function ClientCourseList() {
             <span>{course.career_name ? 
             course.career_name : "sin carrera"} - {course.year} - {course.career_year}º año - División {course.division}
             </span>
+            {canCreateCourses && (
             <Link href={`/home/admin/cursos/curso/${course.course_id}`} className="ml-4 text-blue-500 hover:underline">
               Ver curso
             </Link>
+            )}
           </li>
         ))}
       </ul>
