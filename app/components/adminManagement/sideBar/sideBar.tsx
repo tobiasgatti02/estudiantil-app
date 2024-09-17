@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import Logout from '@/app/auth/logOut/page';
 import Link from 'next/link';
-
+import { useSession } from 'next-auth/react';
+import { useUser } from '@/app/context/UserContext';
 const menuItems = [
   { href: '/home/admin/alumnos', label: 'Crear usuarios' },
   { href: '/home/admin/carreras', label: 'Carreras' },
@@ -11,7 +12,9 @@ const menuItems = [
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const { data: session } = useSession();
+  const { user } = useUser();
+  const name = user?.name || session?.user?.name || '';
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
@@ -56,9 +59,12 @@ export default function Sidebar() {
               </Link>
             </li>
           ))}
-          <li>
+          <li className="px-4 text-lg font-medium"> Usuario: {name.toUpperCase()}</li>
+          <li>  
             <Logout />
           </li>
+
+
         </ul>
       </nav>
     </div>

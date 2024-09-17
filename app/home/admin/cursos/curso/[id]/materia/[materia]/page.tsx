@@ -1,13 +1,11 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import SubjectDetails from '@/app/components/materias/detallesMaterias';
 import SubjectSchedule from '@/app/components/materias/horariosMaterias';
 import { useParams, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { doLogout, getAdminByDni } from '@/app/lib/userActions';
-import { updateSubject } from '@/app/lib/adminActions';
-import Logout from '@/app/auth/logOut/page';
+import { getSubjectName, updateSubject } from '@/app/lib/adminActions';
 
 export default function SubjectPage() {
   const params = useParams();
@@ -38,7 +36,21 @@ export default function SubjectPage() {
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [session]);
+  }, [session, router]);
+
+  useEffect(() => {
+    const fetchSubjectName = async () => {
+      try {
+        const response = await getSubjectName(courseId, subjectId);
+        
+        setNewSubjectName(response);
+      } catch (error) {
+        console.error('Error fetching subject name:', error);
+      }
+    };
+
+    fetchSubjectName();
+  }, [courseId, subjectId]);
 
   const handleUpdateSubjectName = async (e: React.FormEvent) => {
     e.preventDefault();
