@@ -4,8 +4,6 @@
 
 :root {
   --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --foreground-rgb: 0, 0, 0; /* Color de texto por defecto para el modo claro */
 }
 
 @media (prefers-color-scheme: dark) {
