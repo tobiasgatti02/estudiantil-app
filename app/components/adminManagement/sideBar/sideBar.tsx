@@ -16,7 +16,7 @@ export default function Sidebar() {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <div className="relative">
+    <div className="relative min-h-full">
       <button
         className="md:hidden p-2 text-gray-800 bg-white rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-transform mt-4 ml-4 transform hover:scale-110"
         onClick={toggleMenu}
@@ -43,22 +43,26 @@ export default function Sidebar() {
         </button>
       )}
 
-      <nav
-        className={`fixed md:relative top-0 left-0 w-64 bg-gradient-to-r from-gray-800 to-gray-900 h-screen text-white p-6 md:p-4 md:w-64 shadow-xl transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
-      >
-        <ul className="space-y-4">
-          {menuItems.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href} className="block px-4 py-2 text-lg font-medium hover:bg-gray-700 hover:rounded-md transition-colors duration-200" onClick={closeMenu}>
-                {item.label}
-              </Link>
+      <div className="flex min-h-full">
+        <nav
+          className={`fixed md:relative top-0 left-0 w-64 bg-gradient-to-r from-gray-800 to-gray-900 min-h-full h-auto text-white p-6 md:p-4 shadow-xl transition-transform transform ${
+            isOpen ? 'translate-x-0' : '-translate-x-full'
+          } md:translate-x-0`}
+        >
+          <ul className="space-y-4">
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="block px-4 py-2 text-lg font-medium hover:bg-gray-700 hover:rounded-md transition-colors duration-200" onClick={closeMenu}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Logout />
             </li>
-          ))}
-          <li>
-            <Logout />
-          </li>
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      </div>
     </div>
   );
 }

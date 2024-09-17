@@ -13,6 +13,7 @@ export default function CuentaPage() {
   interface TeacherData {
     password: string;
     user_id: string;
+    name: string;
     // Add other properties as needed
   }
   
@@ -132,7 +133,7 @@ export default function CuentaPage() {
       {successMessage && <p className="text-green-500 mt-2">{successMessage}</p>}
 
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Datos Personales</h2>
+        <h2 className="text-xl font-bold mb-4">Datos Personales {datos?.name}</h2>
         <div className="mb-4">
           <label className="block text-gray-700">Contraseña</label>
           <input

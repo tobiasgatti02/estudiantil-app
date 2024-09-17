@@ -141,7 +141,16 @@ export async function createUser(userData: { name: string, dni: string, password
   }
 }
 
-
+export async function checkDniExists(dni: string): Promise<boolean> {
+  try {
+    const query = `SELECT 1 FROM usuarios WHERE dni = $1`;
+    const values = [dni];
+    const result = await db.query(query, values);
+    return (result.rowCount ?? 0) > 0;
+  } catch (error: any) {
+    throw new Error('Error checking DNI: ' + error.message);
+  }
+}
 
 
 

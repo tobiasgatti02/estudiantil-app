@@ -69,10 +69,7 @@ const LoginForm = () => {
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Username</label>
                         <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="text" name="name" id="name" required />
                     </div>
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="password" name="password" id="password" required />
-                    </div>
+                 
                     <div>
                         <label htmlFor="dni" className="block text-sm font-medium text-gray-700">Dni</label>
                         <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="number" name="dni" id="dni" required 
@@ -84,6 +81,11 @@ const LoginForm = () => {
                             }
                           }}
                         onInput={handleDniInput} />
+                    </div>
+
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <input className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" type="password" name="password" id="password" required />
                     </div>
                     <button type="submit" className="w-full py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled={loading}>
                         {loading ? 'Logging in...' : 'Credential Login'}

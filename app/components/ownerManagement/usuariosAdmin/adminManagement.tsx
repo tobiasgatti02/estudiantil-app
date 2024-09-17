@@ -1,6 +1,7 @@
 "use client"
 import { getUsersByRole, updateUser, createUser, deleteUser } from '@/app/lib/userActions';
 import { useState } from 'react';
+import { checkDniExists } from '@/app/lib/userActions'; // Asegúrate de importar la función
 
 const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
   users: any[],
@@ -57,6 +58,12 @@ const AdminManagement = ({ users, activeSubSection, fetchUsers }: {
     }
   
     try {
+
+      const dniExists = await checkDniExists(newAdmin.dni);
+      if (dniExists) {
+        setSaveMessage({ message: 'Error: El DNI coincide con el de otro usuario ya existente.', error: true });
+        return;
+      }
       await createUser({
         name: newAdmin.name,
         dni: newAdmin.dni,

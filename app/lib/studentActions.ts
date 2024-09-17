@@ -39,7 +39,7 @@ export async function getStudentCourses(dni:number) {
 export async function getStudentByDni(dni:number) {
     try {
       const query = `
-        SELECT s.student_id, u.user_id, u.dni,u.password
+        SELECT s.student_id, u.user_id, u.dni,u.password, u.name
         FROM students s
         LEFT JOIN usuarios u ON s.user_id = u.user_id
         WHERE u.dni = $1

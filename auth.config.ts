@@ -27,7 +27,7 @@ export const authConfig: NextAuthConfig = {
       const isOnOwner = nextUrl.pathname.startsWith('/home/owner');
       const isOnAdmin = nextUrl.pathname.startsWith('/home/admin');
       const isOnTeacher = nextUrl.pathname.startsWith('/home/profesor');
-      const isOnStudent = nextUrl.pathname.startsWith('/home/alumno/cursos');
+      const isOnStudent = nextUrl.pathname.startsWith('/home/alumno');
       const baseUrl = process.env.NEXTAUTH_URL;
       //@ts-ignore
       const user = await getUserByDNI(auth?.user.dni);

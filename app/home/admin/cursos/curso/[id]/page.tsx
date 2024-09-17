@@ -42,16 +42,14 @@ export default function CoursePage() {
       <Link href="/home/admin/cursos" className="text-blue-500 hover:underline mb-4 inline-block">
         ← Volver a la lista de cursos
       </Link>
-      <Suspense fallback={<div>Loading course details...</div>}>
+      <Suspense fallback={<div>Loading subjects...</div>}>
+
         <CourseDetails courseId={Number(id)} />
       </Suspense>
-      <Suspense fallback={<div>Loading students...</div>}>
         <StudentList courseId={Number(id)}/>
-      </Suspense>
      
-      <Suspense fallback={<div>Loading subjects...</div>}>
         <SubjectList />
-      </Suspense>
+     
 
     </div>
   );

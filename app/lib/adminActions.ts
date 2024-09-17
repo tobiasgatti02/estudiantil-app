@@ -92,7 +92,7 @@ export async function deleteCarrera(careerId: number) {
 export async function getCourses() {
   try {
     const query = `
-      SELECT c.course_id, ca.name AS career_name, c.year, c.career_year, c.division
+      SELECT c.course_id, c.career_name,  c.year, c.career_year, c.division
       FROM courses c
       LEFT JOIN careers ca ON c.career_id = ca.career_id
       ORDER BY ca.name, c.year, c.career_year, c.division
@@ -108,12 +108,13 @@ export async function getCourses() {
 export async function createCourse(careerName: string, year: number, careerYear: number, division: string) {
   try {
     const query = `
-      INSERT INTO courses (career_id, year, career_year, division)
+      INSERT INTO courses (career_id, year, career_year, division,career_name)
       VALUES (
         (SELECT career_id FROM careers WHERE name = $1),
         $2,
         $3,
-        $4
+        $4,
+        $1
       )
       RETURNING course_id
     `;
